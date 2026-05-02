@@ -1,92 +1,69 @@
 <?php
-error_reporting(0);
 session_start();
-    if(!isset($_SESSION['username']))
-    {
-        header("location:index.php");
-    }
-    elseif($_SESSION['usertype']=='admin')
-    {
-        header("location:index.php");
-    }
-    $host="localhost";
-    $user="root";
-    $password="";
-    $db="sgs";
+error_reporting(E_ALL);
 
-    $conn=mysqli_connect($host,$user,$password,$db);
+if(!isset($_SESSION['username'])) {
+    header("location:index.php");
+} elseif($_SESSION['usertype']=='admin') {
+    header("location:index.php");
+}
 
-    $sql="SELECT * FROM exam ORDER BY year DESC";
+$host="localhost";
+$user="root";
+$password="";
+$db="sgs";
+$conn=mysqli_connect($host,$user,$password,$db);
 
-    $result=mysqli_query($conn,$sql);
+$user = $_SESSION['username'];
+$stu_query = "SELECT class_id FROM studentlist WHERE enroll='$user'";
+$stu_res = mysqli_query($conn, $stu_query);
+$stu_data = mysqli_fetch_assoc($stu_res);
+$stu_class_id = $stu_data['class_id'];
 
+$sql = "SELECT e.*, c.class_name FROM exam e JOIN classes c ON e.class_id = c.id WHERE e.class_id='$stu_class_id' ORDER BY e.year DESC";
+$result = mysqli_query($conn, $sql);
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Student panel</title>
-    <link rel="stylesheet" type="text/css" href="css/admin-style.css">
-    <style type="text/css">
-        table
-        {
-            border-radius: 10px;
-        }
-        .table_th
-        {
-            padding: 20px;
-            font-size: 20px;
-            background-color: #de3163;
-            border-radius: 10px;
-        }
-
-        .table_td
-        {
-            padding: 20px;
-            background-color: #fcf4a3;
-            border-radius: 10px;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>My Exams & Results | Student Dashboard</title>
+    <?php include 'shared_styles.php'; ?>
 </head>
-    <body>
-        <!----------------------------------------sidebar code------------------------------------->
-        <?php
-        include 'student_sidebar.php';
-        ?>
-        <!------------------------------------------------------------------------------------------>
-        <div class="content">
-            <center>
-            <h1>Exam List</h1>
+<body>
+    <?php include 'student_sidebar.php'; ?>
 
-            <?php
-                if($_SESSION['message'])
-                {
-                    echo $_SESSION['message'];
-                }
+    <div class="content">
+        <h1>My Exams & Results</h1>
+        <p style="color: #636e72; margin-bottom: 30px;">View your assessment performance and upcoming exams.</p>
 
-                unset($_SESSION['message']);
-            ?>
-
-            <br>
-            <table >
-                <tr>
-                    <th class="table_th">Exam Name</th>
-                    <th class="table_th">Exam Year</th>
-                    <th class="table_th">Exam Type</th>
-                    <th class="table_th">View Marks</th>
-                </tr>
-                <?php
-                    while ($info=$result->fetch_assoc()) {  
-                ?>
-                <tr>
-                    <td class="table_td"><?php echo "{$info['examname']}"; ?></td>
-                    <td class="table_td"><?php echo "{$info['year']}"; ?></td>
-                    <td class="table_td"><?php echo "{$info['type']}"; ?></td>
-                    <td class="table_td"><?php echo "<a class='btn' href='view_marks.php?exam_id={$info['id']}'>View</a>"; ?></td>
-                </tr>
-                <?php
-                    }
-                ?>
-            </center>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exam Name</th>
+                        <th>Class</th>
+                        <th>Exam Year</th>
+                        <th>Exam Type</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while($info = mysqli_fetch_assoc($result)) { ?>
+                    <tr>
+                        <td style="font-weight: 600;"><?php echo $info['examname']; ?></td>
+                        <td><span style="background: #f1f2f6; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem;"><?php echo $info['class_name']; ?></span></td>
+                        <td><?php echo $info['year']; ?></td>
+                        <td><?php echo $info['type']; ?></td>
+                        <td style="text-align: center;">
+                            <a href="view_marks.php?exam_id=<?php echo $info['id']; ?>" class="table-btn" style="background: #e8f8f5; color: #00b894;">View My Marks</a>
+                        </td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
             </table>
         </div>
-    </body>
+    </div>
+</body>
 </html>

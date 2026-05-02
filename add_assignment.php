@@ -1,159 +1,115 @@
 <?php
 session_start();
-error_reporting(0);
-    if(!isset($_SESSION['username']))
-    {
-        header("location:index.php");
-    }
-    elseif($_SESSION['usertype']=='admin')
-    {
-        header("location:index.php");
-    }
+error_reporting(E_ALL);
 
-    $host="localhost";
-    $user="root";
-    $password="";
-    $db="sgs";
+if(!isset($_SESSION['username'])) {
+    header("location:index.php");
+} elseif($_SESSION['usertype']=='admin') {
+    header("location:index.php");
+}
 
-    $conn=mysqli_connect($host,$user,$password,$db);
+$host="localhost";
+$user="root";
+$password="";
+$db="sgs";
+$conn=mysqli_connect($host,$user,$password,$db);
 
-    if(isset($_POST['create']))
-    {
-        $assign_name=mysqli_real_escape_string($conn,$_POST['assign_name']);
+if(isset($_POST['create'])) {
+    $assign_name = mysqli_real_escape_string($conn, $_POST['assign_name']);
+    $class_id = $_POST['class_id'];
+    $subject = $_POST['subject'];
+    $date = $_POST['date'];
 
-        $result=mysqli_query($conn,"SHOW TABLES LIKE '".$assign_name."'");
+    $check = "SELECT * FROM assignment WHERE assignment='$assign_name' AND class_id='$class_id'";
+    $res = mysqli_query($conn, $check);
 
-
-        $subject=$_POST['subject'];
-        $date=$_POST['date'];
-
-        if($result->num_rows==1)
-        {
-            echo '<script language="javascript">';
-            echo 'alert("Assignment Already Exists, please try again")';
-            echo '</script>';
-        }
-        else{
-            /*---------------------------------------File Upload--------------------------------------------------------*/
-            $type=$_FILES['file']['type'];
-            $name=$_FILES['file']['name'];
-            $tmp_name=$_FILES['file']['tmp_name'];
-            $fileExtension=explode(".",$name);
-            $fileExtension=end($fileExtension);
-            $n1=rand(1000,10000);
-            $n2=date("ymd");
-            $n3=time();
-            @$newName=$n1.$n2.$n3.".".$fileExtension;
-            $upload_dir='assignment/';
-            $filePath=$upload_dir.$newName;
-            move_uploaded_file($tmp_name,$filePath); 
-            /*-----------------------------------------------------------------------------------------------------------*/
-           $create_assign="CREATE TABLE $assign_name(id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,enroll INT(10),submited DATE,marks INT(10),file VARCHAR(100))";
-            $sql="INSERT INTO assignment(assignment,subject,duedate,file)  VALUES('$assign_name','$subject','$date','$newName')";
-            
-            $result2=mysqli_query($conn,$create_assign);
-            $result3=mysqli_query($conn,$sql);
-            
-
-            echo '<script language="javascript">';
-            echo 'alert("Assignment Added Successfully")';
-            echo '</script>';
-
+    if(mysqli_num_rows($res) > 0) {
+        $msg = "Assignment already exists for this class!";
+    } else {
+        // File Upload
+        $name = $_FILES['file']['name'];
+        $tmp_name = $_FILES['file']['tmp_name'];
+        $ext = pathinfo($name, PATHINFO_EXTENSION);
+        $newName = time() . "_" . rand(1000, 9999) . "." . $ext;
+        $upload_dir = 'assignment/';
+        
+        if(!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+        
+        if(move_uploaded_file($tmp_name, $upload_dir . $newName)) {
+            $sql = "INSERT INTO assignment(assignment, subject, duedate, file, class_id) VALUES('$assign_name', '$subject', '$date', '$newName', '$class_id')";
+            if(mysqli_query($conn, $sql)) {
+                $msg = "Assignment Added Successfully!";
+            } else {
+                $msg = "Database error: " . mysqli_error($conn);
+            }
+        } else {
+            $msg = "File upload failed!";
         }
     }
+}
 
-
+$classes = mysqli_query($conn, "SELECT * FROM classes");
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Teacher panel</title>
-    <link rel="stylesheet" type="text/css" href="css/admin-style.css">
-    <style type="text/css">
-        label
-        {
-            display: inline-block;
-            text-align: right;
-            width: 140px;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            font-size: 16px;
-        }
-        select,input[type='date']
-        {
-            width: 35%;
-        }
-        input[type='file']
-        {
-            width: 40%;
-        }
-        .btn
-        {
-            padding: 5px 10px;
-            background: #fff;
-            border-color: #de3163;
-            border-radius: 30px;
-        }
-        .btn:hover{
-            background: #de3163;
-            color: #fff;
-            border-radius: 30px;
-        }
-        .div_deg
-        {
-            background-color: #fcf4a3;
-            width: 500px;
-            padding-top: 70px;
-            padding-bottom: 50px;
-            border-radius: 40px;
-        }
-    </style>
-        <!----------------------------------------sidebar code------------------------------------->
-        <?php
-        include 'teacher_sidebar.php';
-        ?>
-        <!------------------------------------------------------------------------------------------>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Add Assignment | Teacher Dashboard</title>
+    <?php include 'shared_styles.php'; ?>
 </head>
-    <body>
-       
+<body>
+    <?php include 'teacher_sidebar.php'; ?>
+
     <div class="content">
-            <center>
-            <h1>Add Assignment</h1>
-            <div class="div_deg">
-                <form method="POST" action="#" enctype="multipart/form-data">
-                <div>
-                        <label>Assignment Name</label>
-                        <input type="text" name="assign_name" required>
-                    </div>
-                    <br>
+        <div class="form-container">
+            <h1 style="text-align: center; margin-bottom: 10px;">Post New Assignment</h1>
+            <p style="text-align: center; color: #636e72; margin-bottom: 30px;">Upload coursework and set deadlines for students.</p>
+
+            <?php if(isset($msg)) { 
+                $color = strpos($msg, 'Successfully') !== false ? '#00b894' : '#d63031';
+                $bg = strpos($msg, 'Successfully') !== false ? '#e8f8f5' : '#fdeded';
+                echo "<div style='padding: 15px; border-radius: 12px; margin-bottom: 25px; background: $bg; color: $color; border: 1px solid $color; font-weight: 600; text-align: center;'>$msg</div>";
+            } ?>
+
+            <form action="#" method="POST" enctype="multipart/form-data">
+                <label>Assignment Title</label>
+                <input type="text" name="assign_name" placeholder="e.g. Algebra Homework #1" required>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
                         <label>Subject</label>
-                        <select name="subject"  required>
-                            <option>Select Subject</option>
+                        <select name="subject" required>
+                            <option value="">Select Subject</option>
                             <option>English</option>
                             <option>Science</option>
                             <option>Maths</option>
-                            <option>Hindi</option>
-                            <option>Social Science</option>
-                            <option>Sanskrit</option>
                             <option>Computer</option>
+                            <option>Social Science</option>
                         </select>
                     </div>
-                    <br>
                     <div>
-                        <label>Due Date</label>
-                        <input type="date" name="date" required>
+                        <label>Target Class</label>
+                        <select name="class_id" required>
+                            <option value="">Select Class</option>
+                            <?php while($c = mysqli_fetch_assoc($classes)) { ?>
+                                <option value="<?php echo $c['id']; ?>"><?php echo $c['class_name']; ?></option>
+                            <?php } ?>
+                        </select>
                     </div>
-                    <br>
-                    <div>
-                        <input type="file" name="file" required>
-                    </div>
-                    <br>
-                    <div>
-                        <input type="submit" class="btn" name="create" value="Add">
-                    </div>
-                </form>
-            </div>
-        </center>
+                </div>
+
+                <label>Submission Due Date</label>
+                <input type="date" name="date" required>
+
+                <label>Assignment File (PDF/Doc/Image)</label>
+                <input type="file" name="file" required style="padding: 10px; border: 2px dashed #ddd; background: #fafafa;">
+
+                <div style="margin-top: 20px;">
+                    <button type="submit" name="create" class="submit-btn" style="cursor: pointer; border: none;">Post Assignment</button>
+                </div>
+            </form>
         </div>
-    </body>
+    </div>
+</body>
 </html>

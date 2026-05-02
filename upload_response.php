@@ -24,7 +24,7 @@ error_reporting(0);
     {
         $date=$_POST['date'];
 
-        $check=" SELECT * FROM $table1 WHERE enroll='$user'";
+        $check=" SELECT * FROM assignment_responses WHERE assignment_id='$table1' AND enroll='$user'";
 
         $check_resp=mysqli_query($conn,$check);
 
@@ -54,7 +54,7 @@ error_reporting(0);
             $filePath=$upload_dir.$newName;
             move_uploaded_file($tmp_name,$filePath); 
             /*-----------------------------------------------------------------------------------------------------------*/
-            $sql0="INSERT INTO $table1(enroll,submited,file)  VALUES('$user','$date','$newName')";
+            $sql0="INSERT INTO assignment_responses(assignment_id, enroll, submited, file) VALUES('$table1', '$user','$date','$newName')";
             
             $result2=mysqli_query($conn,$sql0);
             

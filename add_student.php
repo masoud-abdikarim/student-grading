@@ -1,199 +1,120 @@
 <?php
+error_reporting(E_ALL);
 session_start();
-error_reporting(0);
-    if(!isset($_SESSION['username']))
-    {
-        header("location:index.php");
-    }
-    elseif($_SESSION['usertype']=='student')
-    {
-        header("location:index.php");
-    }
 
-    $host="localhost";
-    $user="root";
-    $password="";
-    $db="sgs";
-
-    $conn=mysqli_connect($host,$user,$password,$db);
-
-    if(isset($_POST['add_student']))
-    {
-       $enroll=$_POST['enroll'];
-	   $firstname=$_POST['firstname'];
-	   $lastname=$_POST['lastname'];
-       $email=$_POST['email'];
-       $phone=$_POST['phone'];
-       $password=$_POST['password'];
-       $usertype='student';
-
-       if (strlen($phone)<=9) {
-       	 $valid1="Phone Number Should be 10 Degits";
-
-       	$enroll2=$enroll;
-   		$firstname2=$firstname;
-   		$lastname2=$lastname;
-   		$email2=$email;
-   		$password2=$password;
-       }
-       elseif(strlen($phone)>=11){
-       	$valid1="Phone Number Should be 10 Degits";
-
-       	$enroll2=$enroll;
-   		$firstname2=$firstname;
-   		$lastname2=$lastname;
-   		$email2=$email;
-   		$password2=$password;
-       }
-       else{
-       	if(filter_var($email,FILTER_VALIDATE_EMAIL))
-       {
-       $check="	SELECT * FROM studentlist WHERE enroll='$enroll'";
-
-       $check_user=mysqli_query($conn,$check);
-
-       $row_count=mysqli_num_rows($check_user);
-
-       if ($row_count==1) 
-       {
-       		echo "<script type='text/javascript'>
-       	alert('Enrollment Number Already Exist')
-       	</script>";
-       	$firstname2=$firstname;
-   		$lastname2=$lastname;
-   		$phone2=$phone;
-   		$email2=$email;
-   		$password2=$password;
-       }
-       else
-       {
-
-
-       $sql="INSERT INTO studentlist(enroll,firstname,lastname,email,phone,usertype,password) 	VALUES ('$enroll','$firstname','$lastname','$email','$phone','$usertype','$password')";
-
-       $result=mysqli_query($conn,$sql);
-
-       if($result)
-       {
-       	$to=$email;
-        $subject='You enroll in our system';
-        $message='Enroll  :  '.$enroll.'
-Firstname : '.$firstname.'
-Lastname : '.$lastname.'
-Email : '.$email.'
-Phone : '.$phone.'
-Password : '.$password.'';
-        $header='From:chiragparmar1502@gmail.com';
-        $m=mail($to,$subject,$message,$header);
-
-       	echo "<script type='text/javascript'>
-       	alert('Data Uploaded Successfully')
-       	</script>";
-
-       }
-       else
-       {
-       	echo "upload failed";
-       }
-   	}
-   }
-   		else{
-   		$valid2="Email Should be in proper format";
-
-   		$enroll2=$enroll;
-   		$firstname2=$firstname;
-   		$lastname2=$lastname;
-   		$phone2=$phone;
-   		$password2=$password;
-   	}
+if(!isset($_SESSION['username'])) {
+    header("location:index.php");
+} elseif($_SESSION['usertype']=='student') {
+    header("location:index.php");
 }
+
+$host="localhost";
+$user="root";
+$password="";
+$db="sgs";
+$conn=mysqli_connect($host,$user,$password,$db);
+
+// Initialize variables
+$firstname2 = $lastname2 = $email2 = $phone2 = $class_id2 = $password2 = "";
+
+if(isset($_POST['add_student'])) {
+    $firstname2 = $_POST['firstname'];
+    $lastname2 = $_POST['lastname'];
+    $email2 = $_POST['email'];
+    $phone2 = $_POST['phone'];
+    $class_id2 = $_POST['class_id'];
+    $password2 = $_POST['password'];
+    $usertype = "student";
+
+    $check = "SELECT * FROM studentlist WHERE email='$email2'";
+    $check_user = mysqli_query($conn, $check);
+    $row_count = mysqli_num_rows($check_user);
+
+    if($row_count == 1) {
+        $msg = "Email already exists. Try another one.";
+    } else {
+        // Auto-generate enrollment number
+        $result = mysqli_query($conn, "SELECT MAX(id) as max_id FROM studentlist");
+        $row = mysqli_fetch_assoc($result);
+        $next_id = ($row['max_id'] ?? 0) + 1;
+        $enroll = "ENR-" . str_pad($next_id, 4, '0', STR_PAD_LEFT);
+
+        $sql = "INSERT INTO studentlist (firstname, lastname, email, phone, enroll, usertype, password, class_id) 
+                VALUES ('$firstname2', '$lastname2', '$email2', '$phone2', '$enroll', '$usertype', '$password2', '$class_id2')";
+        
+        $result = mysqli_query($conn, $sql);
+
+        if($result) {
+            $msg = "Student Added Successfully! Enrollment: $enroll";
+            $firstname2 = $lastname2 = $email2 = $phone2 = $class_id2 = $password2 = "";
+        } else {
+            $msg = "Data Upload Failed: " . mysqli_error($conn);
+        }
+    }
 }
 ?>
-<html>
-<head>
-	<title>Admin panel</title>
-	<link rel="stylesheet" type="text/css" href="css/admin-style.css">
-	<style type="text/css">
-		label
-		{
-			display: inline-block;
-			text-align: right;
-			width: 100px;
-			padding-top: 10px;
-			padding-bottom: 10px;
-			font-size: 16px;
-		}
-		.btn
-		{
-			padding: 5px 10px;
-			background: #fff;
-			border-color: #de3163;
-			border-radius: 30px;
-		}
-		.btn:hover{
-			background: #de3163;
-			color: #fff;
-			border-radius: 30px;
-		}
-		.div_deg
-		{
-			background-color: #fcf4a3;
-			width: 500px;
-			padding-top: 40px;
-			padding-bottom: 50px;
-			border-radius: 40px;
-		}
-		p{
-			color: red;
-		}
-	</style>
+<!DOCTYPE html>
+<html lang="en">
+	<title>Add Student | Admin Dashboard</title>
+    <?php include 'shared_styles.php'; ?>
 </head>
-    <body>
-    	<!----------------------------------------sidebarcode------------------------------------->
-      	<?php
-      	include 'admin_sidebar.php';
-      	?>
-        <!------------------------------------------------------------------------------------------>
-        <div class="content">
-        	<center>
-        	<h1>Add Student</h1>
-        	<div class="div_deg">
-        			<br>
-        		<form method="POST" action="#">
-					<div>
-        				<label>Enroll No.</label>
-        				<input type="text" name="enroll" value="<?php echo $enroll2 ?>" required>
-        			</div>
-        			<div>
-        				<label>First Name</label>
-        				<input type="text" name="firstname" value="<?php echo $firstname2 ?>" required>
-        			</div>
-					<div>
-        				<label>Last Name</label>
-        				<input type="text" name="lastname" value="<?php echo $lastname2 ?>" required>
-        			</div>
-        			<div>
-        				<label>Email</label>
-        				<input type="email" name="email" value="<?php echo $email2 ?>" required>
-        			</div>
+<body>
+    <?php include 'admin_sidebar.php'; ?>
 
-        			<div>
-        				<label>Phone</label>
-        				<input type="tel" name="phone" pattern="[0-9]{10,10}" maxlength="10" minlength="10" value="<?php echo $phone2 ?>" required>
-        			</div>
+    <div class="content">
+        <div class="form-container">
+            <h1 style="text-align: center; margin-bottom: 10px;">Add New Student</h1>
+            <p style="text-align: center; color: #636e72; margin-bottom: 30px;">Fill in the details to enroll a new student.</p>
 
-        			<div>
-        				<label>Password</label>
-        				<input type="text" name="password" value="<?php echo $password2 ?>" required>
-        			</div>
-        			<br>
-        			<br>
-        			<div>
-        				<input type="submit" class="btn" name="add_student" value="Add Student">
-        			</div>
-        		</form>
-        	</div>
-        </center>
+            <?php if(isset($msg)) { 
+                $color = strpos($msg, 'Successfully') !== false ? '#00b894' : '#d63031';
+                $bg = strpos($msg, 'Successfully') !== false ? '#e8f8f5' : '#fdeded';
+                echo "<div style='padding: 15px; border-radius: 12px; margin-bottom: 25px; background: $bg; color: $color; border: 1px solid $color; font-weight: 600; text-align: center;'>$msg</div>";
+            } ?>
+
+            <form action="#" method="POST">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label>First Name</label>
+                        <input type="text" name="firstname" value="<?php echo $firstname2 ?>" placeholder="e.g. John" required>
+                    </div>
+                    <div>
+                        <label>Last Name</label>
+                        <input type="text" name="lastname" value="<?php echo $lastname2 ?>" placeholder="e.g. Doe" required>
+                    </div>
+                </div>
+
+                <label>Email Address</label>
+                <input type="email" name="email" value="<?php echo $email2 ?>" placeholder="john.doe@example.com" required>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label>Phone Number</label>
+                        <input type="text" name="phone" value="<?php echo $phone2 ?>" placeholder="07xxxxxxxx" required>
+                    </div>
+                    <div>
+                        <label>Assign Class</label>
+                        <select name="class_id" required>
+                            <option value="">Select Class</option>
+                            <?php
+                            $classes = mysqli_query($conn, "SELECT * FROM classes");
+                            while($c = mysqli_fetch_assoc($classes)) {
+                                $sel = ($class_id2 == $c['id']) ? "selected" : "";
+                                echo "<option value='{$c['id']}' $sel>{$c['class_name']}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+
+                <label>Login Password</label>
+                <input type="password" name="password" value="<?php echo $password2 ?>" placeholder="Set a secure password" required>
+
+                <div style="margin-top: 20px;">
+                    <button type="submit" name="add_student" class="submit-btn" style="cursor: pointer; border: none;">Add Student Account</button>
+                </div>
+            </form>
         </div>
-    </body>
+    </div>
+</body>
 </html>

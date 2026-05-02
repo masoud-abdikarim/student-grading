@@ -20,7 +20,7 @@ error_reporting(0);
     $table=$_GET['assign_id'];
     $response=$_SESSION['username'];
 
-    $sql="SELECT * FROM $table WHERE enroll='$response'";
+    $sql="SELECT * FROM assignment_responses WHERE assignment_id='$table' AND enroll='$response'";
 
     $result=mysqli_query($conn,$sql);
 

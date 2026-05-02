@@ -20,7 +20,7 @@ error_reporting(0);
     $table=$_GET['assign_id'];
     $response=$_GET['response_id'];
 
-    $sql="SELECT * FROM $table WHERE id='$response'";
+    $sql="SELECT * FROM assignment_responses WHERE id='$response'";
 
     $result=mysqli_query($conn,$sql);
 
@@ -31,7 +31,7 @@ error_reporting(0);
         $enroll=$_POST['enroll'];
         $marks=$_POST['marks'];
 
-        $sql2="UPDATE $table SET marks='$marks' WHERE enroll='$enroll'";
+        $sql2="UPDATE assignment_responses SET marks='$marks' WHERE id='$response'";
 
         $result2=mysqli_query($conn,$sql2);
         if($result2)

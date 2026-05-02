@@ -1,191 +1,119 @@
 <?php
 session_start();
-error_reporting(0);
-    if(!isset($_SESSION['username']))
-    {
-        header("location:index.php");
-    }
-    elseif($_SESSION['usertype']=='admin')
-    {
-        header("location:index.php");
-    }
+error_reporting(E_ALL);
 
-    $host="localhost";
-    $user="root";
-    $password="";
-    $db="sgs";
+if(!isset($_SESSION['username'])) {
+    header("location:index.php");
+} elseif($_SESSION['usertype']=='admin') {
+    header("location:index.php");
+}
 
-    $conn=mysqli_connect($host,$user,$password,$db);
+$host="localhost";
+$user="root";
+$password="";
+$db="sgs";
+$conn=mysqli_connect($host,$user,$password,$db);
 
-    $table=$_GET['exam_id'];
-    $student=$_SESSION['username'];
+$exam_id = $_GET['exam_id'];
+$student_enroll = $_SESSION['username'];
 
-    $sql="SELECT * FROM results WHERE exam_id='$table' AND enroll='$student'";
+$result_query = "SELECT * FROM results WHERE exam_id='$exam_id' AND enroll='$student_enroll'";
+$result_res = mysqli_query($conn, $result_query);
+$marks_data = mysqli_fetch_assoc($result_res);
 
-    $result=mysqli_query($conn,$sql);
+$student_query = "SELECT s.*, c.class_name FROM studentlist s LEFT JOIN classes c ON s.class_id = c.id WHERE s.enroll='$student_enroll'";
+$student_data = mysqli_fetch_assoc(mysqli_query($conn, $student_query));
 
-    $info=mysqli_fetch_assoc($result);
+$exam_query = "SELECT * FROM exam WHERE id='$exam_id'";
+$exam_info = mysqli_fetch_assoc(mysqli_query($conn, $exam_query));
 
-    $sql2="SELECT * FROM studentlist WHERE enroll='$student'";
+function getGrade($marks) {
+    if ($marks >= 90) return ["grade" => "A+", "pass" => "Pass", "color" => "#00b894"];
+    if ($marks >= 80) return ["grade" => "A", "pass" => "Pass", "color" => "#00b894"];
+    if ($marks >= 70) return ["grade" => "B+", "pass" => "Pass", "color" => "#00b894"];
+    if ($marks >= 60) return ["grade" => "B", "pass" => "Pass", "color" => "#00b894"];
+    if ($marks >= 50) return ["grade" => "C", "pass" => "Pass", "color" => "#00b894"];
+    if ($marks >= 40) return ["grade" => "P", "pass" => "Pass", "color" => "#fdcb6e"];
+    return ["grade" => "F", "pass" => "Fail", "color" => "#d63031"];
+}
 
-    $result2=mysqli_query($conn,$sql2);
+$subjects = [
+    "sub1" => "English",
+    "sub2" => "Science",
+    "sub3" => "Hindi",
+    "sub4" => "Maths",
+    "sub5" => "Social Science",
+    "sub6" => "Sanskrit",
+    "sub7" => "Computer"
+];
 
-    $info2=mysqli_fetch_assoc($result2);
-
-    function grade()
-    {
-        global $temp,$pass,$grade;
-        if (($temp>=90) && ($temp<=100)) {
-        $pass="Pass";
-        $grade="A+";
-        }
-        elseif(($temp>=80) && ($temp<=89)){
-            $pass="Pass";
-            $grade="A";
-        }
-        elseif(($temp>=70) && ($temp<=79)){
-            $pass="Pass";
-            $grade="B+";
-        }
-        elseif(($temp>=60) && ($temp<=69)){
-            $pass="Pass";
-            $grade="B";
-        }
-        elseif(($temp>=50) && ($temp<=59)){
-            $pass="Pass";
-            $grade="C";
-        }
-        elseif(($temp<50) && ($temp>=40)){
-            $pass="Pass";
-            $grade="P";
-        }
-        elseif($temp<40){
-            $pass="Fail";
-            $grade="F";
-        }
-        elseif($temp="0"){
-            $pass="";
-            $grade="";
-        }
-
-    }   
+$total_marks = 0;
+foreach($subjects as $key => $name) {
+    $total_marks += ($marks_data[$key] ?? 0);
+}
+$percentage = number_format(($total_marks / 7), 2);
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Student panel</title>
-    <link rel="stylesheet" type="text/css" href="css/admin-style.css">
-    <style type="text/css">
-        label
-        {
-            display: inline-block;
-            text-align: right;
-            width: 105px;
-            /*padding-top: 8px;*/
-            padding-bottom: 8px;
-            font-size: 16px;
-        }
-        .lab1{
-            width: 285px;
-            text-align: left;
-
-        }
-        .lab{
-            width: 200px;
-            text-align: left;
-
-        }
-        .btn
-        {
-            padding: 5px 10px;
-            background: #fff;
-            border-color: #de3163;
-            border-radius: 30px;
-        }
-        .btn:hover{
-            background: #de3163;
-            color: #fff;
-            border-radius: 30px;
-        }
-        .div_deg
-        {
-            background-color: #fcf4a3;
-            width: 500px;
-            padding-top: 70px;
-            padding-bottom: 50px;
-            border-radius: 40px;
-        }
-    </style>
-        <!----------------------------------------sidebar code------------------------------------->
-        <?php
-        include 'student_sidebar.php';
-        ?>
-        <!------------------------------------------------------------------------------------------>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Exam Result | Student Dashboard</title>
+    <?php include 'shared_styles.php'; ?>
 </head>
-    <body>
-        <div class="content">
-            <center>
-            <h1>Result</h1>
-            <div class="div_deg">
-            <form method="POST" action="#">
-                <label class="lab1">Enroll :<?php echo "{$info2['enroll']}";?> </label><br>
-                <label class="lab1">Name :<?php echo "{$info2['firstname']}"." {$info2['lastname']}";?> </label>
-        <table border>
-            <tr>
-                <th>Subject</th>
-                <th>Marks</th>
-                <th>Grade</th>
-                <th>Remark</th>
-            </tr>
-            <tr>
-                <td>English</td>
-                <td><?php echo "{$info['sub1']}";?></td>
-                <td><?php $temp="{$info['sub1']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info['sub1']}"; grade($temp); echo $pass;?></td>
-            </tr>
-            <tr>
-                <td>Science</td>
-                <td><?php echo "{$info['sub2']}";?></td>
-                <td><?php $temp="{$info['sub2']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info['sub2']}"; grade($temp); echo $pass;?></td>
-            </tr>
-            <tr>
-                <td>Hindi</td>
-                <td><?php echo "{$info['sub3']}";?></td>
-                <td><?php $temp="{$info['sub3']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info['sub3']}"; grade($temp); echo $pass;?></td>
-            </tr>
-            <tr>
-                <td>Maths</td>
-                <td><?php echo "{$info['sub4']}";?></td>
-                <td><?php $temp="{$info['sub4']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info['sub4']}"; grade($temp); echo $pass;?></td>
-            </tr>
-            <tr>
-                <td>Social Science</td>
-                <td><?php echo "{$info['sub5']}";?></td>
-                <td><?php $temp="{$info['sub5']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info['sub5']}"; grade($temp); echo $pass;?></td>
-            </tr>
-            <tr>
-                <td>Sanskrit</td>
-                <td><?php echo "{$info['sub6']}";?></td>
-                <td><?php $temp="{$info['sub6']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info['sub6']}"; grade($temp); echo $pass;?></td>
-            </tr>
-            <tr>
-                <td>Computer</td>
-                <td><?php echo "{$info['sub7']}";?></td>
-                <td><?php $temp="{$info['sub7']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info['sub7']}"; grade($temp); echo $pass;?></td>
-            </tr>
-        </table>
-        <br>
-        <label class="lab">Total : <?php $total="{$info['sub1']}"+"{$info['sub2']}"+"{$info['sub3']}"+"{$info['sub4']}"+"{$info['sub5']}"+"{$info['sub6']}"+"{$info['sub7']}"; echo $total; ?></label><br>
+<body>
+    <?php include 'student_sidebar.php'; ?>
 
-        <label class="lab">Percentage : <?php $pr=$total/7; $pr=number_format((float)$pr,2,'.',''); echo $pr; ?>%</label>
+    <div class="content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div>
+                <h1>Detailed Marks Report</h1>
+                <p style="color: #636e72;">Exam: <strong><?php echo $exam_info['examname']; ?></strong> | Year: <strong><?php echo $exam_info['year']; ?></strong></p>
+            </div>
+            <a href="view_result.php" class="logout" style="background: #eee; color: #333; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600;">Back to List</a>
+        </div>
 
+        <div style="background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 40px; border-left: 5px solid #6c5ce7;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <p><strong>Student Name:</strong> <?php echo $student_data['firstname'] . " " . $student_data['lastname']; ?></p>
+                <p><strong>Enrollment No:</strong> <?php echo $student_data['enroll']; ?></p>
+                <p><strong>Class:</strong> <?php echo $student_data['class_name']; ?></p>
+                <p><strong>Overall Status:</strong> <span style="color: <?php echo ($percentage >= 40) ? '#00b894' : '#d63031'; ?>; font-weight: 700;"><?php echo ($percentage >= 40) ? 'PASSED' : 'FAILED'; ?></span></p>
+            </div>
         </div>
-        </center>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Marks Obtained</th>
+                        <th>Grade</th>
+                        <th>Remark</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach($subjects as $key => $name) { 
+                        $m = $marks_data[$key] ?? 0;
+                        $g = getGrade($m);
+                    ?>
+                    <tr>
+                        <td style="font-weight: 600;"><?php echo $name; ?></td>
+                        <td><?php echo $m; ?> / 100</td>
+                        <td><span style="font-weight: 700; color: <?php echo $g['color']; ?>;"><?php echo $g['grade']; ?></span></td>
+                        <td><span style="background: <?php echo $g['color']; ?>15; color: <?php echo $g['color']; ?>; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;"><?php echo $g['pass']; ?></span></td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+                <tfoot>
+                    <tr style="background: #fafafa;">
+                        <td style="font-weight: 700; padding: 20px;">TOTAL PERFORMANCE</td>
+                        <td style="font-weight: 700; padding: 20px;"><?php echo $total_marks; ?> / 700</td>
+                        <td colspan="2" style="font-weight: 700; padding: 20px; text-align: right; color: #6c5ce7; font-size: 1.2rem;">Percentage: <?php echo $percentage; ?>%</td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
-    </body>
+    </div>
+</body>
 </html>

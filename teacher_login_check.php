@@ -28,7 +28,7 @@ session_start();
             {  
                 $_SESSION["username"]=$uname;
 
-                $_SESSION['usertype']="student";
+                $_SESSION['usertype']="teacher";
 
                 header("location:teacherhome.php");
             }

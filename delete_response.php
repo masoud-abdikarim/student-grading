@@ -15,7 +15,7 @@ session_start();
         $fl=$_GET['response_id'];
         @unlink("responses/".$fl);
 
-    	$sql="DELETE FROM $assign_id WHERE file='$fl'";
+    	$sql="DELETE FROM assignment_responses WHERE file='$fl' AND assignment_id='$assign_id'";
 
     	$result=mysqli_query($conn,$sql);
 
