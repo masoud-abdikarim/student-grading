@@ -20,7 +20,7 @@ error_reporting(0);
     $table=$_GET['exam_id'];
     $student=$_SESSION['username'];
 
-    $sql="SELECT * FROM $table WHERE enroll='$student'";
+    $sql="SELECT * FROM results WHERE exam_id='$table' AND enroll='$student'";
 
     $result=mysqli_query($conn,$sql);
 
@@ -146,7 +146,7 @@ error_reporting(0);
                 <td>Science</td>
                 <td><?php echo "{$info['sub2']}";?></td>
                 <td><?php $temp="{$info['sub2']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info['sub3']}"; grade($temp); echo $pass;?></td>
+                <td><?php $temp="{$info['sub2']}"; grade($temp); echo $pass;?></td>
             </tr>
             <tr>
                 <td>Hindi</td>

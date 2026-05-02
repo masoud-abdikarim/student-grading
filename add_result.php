@@ -84,9 +84,9 @@ session_start();
                     <td class="table_td"><?php echo "{$info['examname']}"; ?></td>
                     <td class="table_td"><?php echo "{$info['year']}"; ?></td>
                     <td class="table_td"><?php echo "{$info['type']}"; ?></td>
-                    <td class="table_td"><?php echo "<a class='btn' href='insert_marks.php?exam_id={$info['examname']}'>Insert</a>"; ?></td>
-                    <td class="table_td"><?php echo "<a class='btn' href='edit_marks.php?exam_id={$info['examname']}'>Edit</a>"; ?></td>
-                    <td class="table_td"><?php echo "<a class='btn' onClick=\"javascript:return confirm('Are You Sure to Delete this ?')\" href='delete_exam.php?exam_id={$info['examname']}'> Delete </a>"; ?></td>
+                    <td class="table_td"><?php echo "<a class='btn' href='insert_marks.php?exam_id={$info['id']}'>Insert</a>"; ?></td>
+                    <td class="table_td"><?php echo "<a class='btn' href='edit_marks.php?exam_id={$info['id']}'>Edit</a>"; ?></td>
+                    <td class="table_td"><?php echo "<a class='btn' onClick=\"javascript:return confirm('Are You Sure to Delete this ?')\" href='delete_exam.php?exam_id={$info['id']}'> Delete </a>"; ?></td>
                 </tr>
                 <?php
                     }

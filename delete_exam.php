@@ -12,8 +12,8 @@ session_start();
     {
     	$exam_id=$_GET['exam_id'];
 
-    	$sql="DELETE FROM exam WHERE examname='$exam_id'";
-        $sql2="DROP TABLE  $exam_id ";
+    	$sql="DELETE FROM exam WHERE id='$exam_id'";
+        $sql2="DELETE FROM results WHERE exam_id='$exam_id'";
 
     	$result=mysqli_query($conn,$sql);
         $result2=mysqli_query($conn,$sql2);

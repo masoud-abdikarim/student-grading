@@ -82,7 +82,7 @@ session_start();
                     <td class="table_td"><?php echo "{$info['examname']}"; ?></td>
                     <td class="table_td"><?php echo "{$info['year']}"; ?></td>
                     <td class="table_td"><?php echo "{$info['type']}"; ?></td>
-                    <td class="table_td"><?php echo "<a class='btn' href='admin_marks.php?exam_id={$info['examname']}'>View</a>"; ?></td>
+                    <td class="table_td"><?php echo "<a class='btn' href='admin_marks.php?exam_id={$info['id']}'>View</a>"; ?></td>
                 </tr>
                 <?php
                     }

@@ -20,7 +20,7 @@ error_reporting(0);
     $table=$_GET['exam_id'];
     $student=$_GET['student_id'];
 
-    $sql="SELECT * FROM $table WHERE enroll='$student'";
+    $sql="SELECT * FROM results WHERE exam_id='$table' AND enroll='$student'";
 
     $result=mysqli_query($conn,$sql);
 
@@ -146,7 +146,7 @@ error_reporting(0);
                 <td>Science</td>
                 <td><?php echo "{$info3['sub2']}";?></td>
                 <td><?php $temp="{$info3['sub2']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info3['sub3']}"; grade($temp); echo $pass;?></td>
+                <td><?php $temp="{$info3['sub2']}"; grade($temp); echo $pass;?></td>
             </tr>
             <tr>
                 <td>Hindi</td>
@@ -169,8 +169,8 @@ error_reporting(0);
             <tr>
                 <td>Sanskrit</td>
                 <td><?php echo "{$info3['sub6']}";?></td>
-                <td><?php $temp="{$info['sub6']}"; grade($temp); echo $grade;?></td>
-                <td><?php $temp="{$info['sub6']}"; grade($temp); echo $pass;?></td>
+                <td><?php $temp="{$info3['sub6']}"; grade($temp); echo $grade;?></td>
+                <td><?php $temp="{$info3['sub6']}"; grade($temp); echo $pass;?></td>
             </tr>
             <tr>
                 <td>Computer</td>

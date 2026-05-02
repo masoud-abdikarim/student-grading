@@ -13,7 +13,7 @@ session_start();
     	$table=$_GET['exam_id'];
         $student_id=$_GET['student_id'];
 
-    	$sql="DELETE FROM $table WHERE id='$student_id'";
+    	$sql="DELETE FROM results WHERE id='$student_id'";
 
     	$result=mysqli_query($conn,$sql);
 

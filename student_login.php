@@ -21,9 +21,9 @@
             </center>
             <form method="POST" action="student_login_check.php">
                 <div class="txt_field">
-                    <input type="text" name="username" required>
+                    <input type="email" name="email" required>
                     <span></span>
-                    <label>Username</label>
+                    <label>Email</label>
                 </div>
                 <div class="txt_field">
                     <input type="password" name="password" required>

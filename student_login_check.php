@@ -15,18 +15,18 @@ session_start();
     }
         if($_SERVER["REQUEST_METHOD"]=="POST")
         {
-            $uname = $_POST['username'];
+            $email = $_POST['email'];
 
             $pass = $_POST['password'];
 
-            $sql="SELECT * FROM studentlist where enroll='".$uname."'AND password='".$pass."'";
+            $sql="SELECT * FROM studentlist where email='".$email."' AND password='".$pass."'";
 
             $result=mysqli_query($conn,$sql);
 
             $row=mysqli_fetch_array($result);
             if($row["usertype"]=="student")
             {  
-                $_SESSION["username"]=$uname;
+                $_SESSION["username"]=$row["enroll"];
 
                // $_SESSION['usertype']="student";
 
@@ -34,7 +34,7 @@ session_start();
             }
             elseif($row["usertype"]=="admin")
             {
-                $_SESSION["username"]=$uname;
+                $_SESSION["username"]=$row["enroll"];
 
                 //$_SESSION['usertype']="admin";
 
@@ -43,7 +43,7 @@ session_start();
             else
             {   
                 session_start();
-                $message="username or password do not match";
+                $message="Email or password do not match";
                 $_SESSION['loginMessage']=$message;
                 header("location:student_login.php");
             }

@@ -17,51 +17,51 @@ error_reporting(0);
 
     $conn=mysqli_connect($host,$user,$password,$db);
 
-    $table=$_GET['exam_id'];
-
-    #$sql="SELECT * FROM exam WHERE examname='$id'";
-
-    #$result=mysqli_query($conn,$sql);
+    $exam_id=$_GET['exam_id'];
 
     if(isset($_POST['add']))
     {
+        $enrolls = $_POST['enroll'];
+        $sub1 = $_POST['sub1'];
+        $sub2 = $_POST['sub2'];
+        $sub3 = $_POST['sub3'];
+        $sub4 = $_POST['sub4'];
+        $sub5 = $_POST['sub5'];
+        $sub6 = $_POST['sub6'];
+        $sub7 = $_POST['sub7'];
 
+        for($i=0; $i<count($enrolls); $i++){
+            $e = $enrolls[$i];
+            // Treat empty inputs as 0
+            $s1 = empty($sub1[$i]) ? 0 : $sub1[$i];
+            $s2 = empty($sub2[$i]) ? 0 : $sub2[$i];
+            $s3 = empty($sub3[$i]) ? 0 : $sub3[$i];
+            $s4 = empty($sub4[$i]) ? 0 : $sub4[$i];
+            $s5 = empty($sub5[$i]) ? 0 : $sub5[$i];
+            $s6 = empty($sub6[$i]) ? 0 : $sub6[$i];
+            $s7 = empty($sub7[$i]) ? 0 : $sub7[$i];
 
-        $enroll=$_POST['enroll'];
-        $sub1=$_POST['sub1'];
-        $sub2=$_POST['sub2'];
-        $sub3=$_POST['sub3'];
-        $sub4=$_POST['sub4'];
-        $sub5=$_POST['sub5'];
-        $sub6=$_POST['sub6'];
-        $sub7=$_POST['sub7'];
-
-        $check=" SELECT * FROM $table WHERE enroll='$enroll'";
-
-        $check_marks=mysqli_query($conn,$check);
-
-        $row_count=mysqli_num_rows($check_marks);
-        
-        if($row_count==1)
-        {
-            echo '<script language="javascript">';
-            echo 'alert("Marks Already Exists, please try again")';
-            echo '</script>';
+            // Check if exist
+            $check="SELECT * FROM results WHERE exam_id='$exam_id' AND enroll='$e'";
+            $check_marks=mysqli_query($conn,$check);
+            if(mysqli_num_rows($check_marks) > 0){
+                // Update
+                $sql="UPDATE results SET sub1='$s1', sub2='$s2', sub3='$s3', sub4='$s4', sub5='$s5', sub6='$s6', sub7='$s7' WHERE exam_id='$exam_id' AND enroll='$e'";
+                mysqli_query($conn,$sql);
+            } else {
+                // Insert
+                $sql="INSERT INTO results (exam_id, enroll, sub1, sub2, sub3, sub4, sub5, sub6, sub7) VALUES ('$exam_id', '$e', '$s1', '$s2', '$s3', '$s4', '$s5', '$s6', '$s7')";
+                mysqli_query($conn,$sql);
+            }
         }
-        else{
 
-            $sql1="INSERT INTO $table (enroll,sub1,sub2,sub3,sub4,sub5,sub6,sub7)  VALUES('$enroll','$sub1','$sub2','$sub3','$sub4','$sub5','$sub6','$sub7')";
-            
-            $result3=mysqli_query($conn,$sql1);
-            
-
-            echo '<script language="javascript">';
-            echo 'alert("Marks Added Successfully")';
-            echo '</script>';
-
-        }
+        echo '<script language="javascript">';
+        echo 'alert("Marks Saved Successfully")';
+        echo '</script>';
     }
 
+    $students_query="SELECT * FROM studentlist";
+    $students_result=mysqli_query($conn,$students_query);
 
 ?>
 <html>
@@ -69,88 +69,61 @@ error_reporting(0);
     <title>Teacher panel</title>
     <link rel="stylesheet" type="text/css" href="css/admin-style.css">
     <style type="text/css">
-        label
-        {
-            display: inline-block;
-            text-align: right;
-            width: 105px;
-            padding-top: 8px;
-            padding-bottom: 8px;
-            font-size: 16px;
-        }
-        .btn
-        {
-            padding: 5px 10px;
-            background: #fff;
-            border-color: #de3163;
-            border-radius: 30px;
-        }
-        .btn:hover{
-            background: #de3163;
-            color: #fff;
-            border-radius: 30px;
-        }
-        .div_deg
-        {
-            background-color: #fcf4a3;
-            width: 500px;
-            padding-top: 70px;
-            padding-bottom: 50px;
-            border-radius: 40px;
-        }
+        table { border-radius: 10px; margin-top: 20px; border-collapse: collapse; width: 90%; }
+        th.table_th { padding: 10px; font-size: 16px; background-color: #de3163; border-radius: 10px; color: white; }
+        td.table_td { padding: 10px; background-color: #fcf4a3; text-align: center; }
+        input[type="number"], input[type="text"] { width: 50px; text-align: center; }
+        .btn { padding: 10px 20px; background: #de3163; color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 16px; margin-top: 20px; }
+        .btn:hover { background: #b0254c; }
     </style>
-        <!----------------------------------------sidebar code------------------------------------->
-        <?php
-        include 'teacher_sidebar.php';
-        ?>
-        <!------------------------------------------------------------------------------------------>
+    <!----------------------------------------sidebar code------------------------------------->
+    <?php include 'teacher_sidebar.php'; ?>
+    <!------------------------------------------------------------------------------------------>
 </head>
-    <body>
-       
+<body>
     <div class="content">
-            <center>
-            <h1>Add Marks</h1>
-            <div class="div_deg">
-                <form method="POST" action="#">
-                    <div>
-                        <label>Enroll No.</label>
-                        <input type="text" name="enroll" required>
-                    </div>
-                    <div>
-                        <label>English</label>
-                        <input type="text" name="sub1" required>
-                    </div>
-                    <div>
-                        <label>Science</label>
-                        <input type="text" name="sub2" required>
-                    </div>
-                    <div>
-                        <label>Hindi</label>
-                        <input type="text" name="sub3" required>
-                    </div>
-                    <div>
-                        <label>Maths</label>
-                        <input type="text" name="sub4" required>
-                    </div>
-                    <div>
-                        <label>Social Science</label>
-                        <input type="text" name="sub5" required>
-                    </div>
-                    <div>
-                        <label>Sanskrit</label>
-                        <input type="text" name="sub6" required>
-                    </div>
-                    <div>
-                        <label>Computer</label>
-                        <input type="text" name="sub7" required>
-                    </div>
-                    <br>
-                    <div>
-                        <input type="submit" class="btn" name="add" value="Add Marks">
-                    </div>
-                </form>
-            </div>
+        <center>
+            <h1>Add/Edit Marks for Students</h1>
+            <form method="POST" action="#">
+                <table border="1">
+                    <tr>
+                        <th class="table_th">Student Name</th>
+                        <th class="table_th">Enroll No.</th>
+                        <th class="table_th">English</th>
+                        <th class="table_th">Science</th>
+                        <th class="table_th">Hindi</th>
+                        <th class="table_th">Maths</th>
+                        <th class="table_th">Social Science</th>
+                        <th class="table_th">Sanskrit</th>
+                        <th class="table_th">Computer</th>
+                    </tr>
+                    <?php
+                        while($student = mysqli_fetch_assoc($students_result)){
+                            $e = $student['enroll'];
+                            $m_query="SELECT * FROM results WHERE exam_id='$exam_id' AND enroll='$e'";
+                            $m_res=mysqli_query($conn, $m_query);
+                            $m_data=mysqli_fetch_assoc($m_res);
+                    ?>
+                    <tr>
+                        <td class="table_td"><?php echo $student['firstname'].' '.$student['lastname']; ?></td>
+                        <td class="table_td">
+                            <input type="hidden" name="enroll[]" value="<?php echo $e; ?>">
+                            <?php echo $e; ?>
+                        </td>
+                        <td class="table_td"><input type="number" name="sub1[]" value="<?php echo $m_data['sub1']; ?>" min="0" max="100"></td>
+                        <td class="table_td"><input type="number" name="sub2[]" value="<?php echo $m_data['sub2']; ?>" min="0" max="100"></td>
+                        <td class="table_td"><input type="number" name="sub3[]" value="<?php echo $m_data['sub3']; ?>" min="0" max="100"></td>
+                        <td class="table_td"><input type="number" name="sub4[]" value="<?php echo $m_data['sub4']; ?>" min="0" max="100"></td>
+                        <td class="table_td"><input type="number" name="sub5[]" value="<?php echo $m_data['sub5']; ?>" min="0" max="100"></td>
+                        <td class="table_td"><input type="number" name="sub6[]" value="<?php echo $m_data['sub6']; ?>" min="0" max="100"></td>
+                        <td class="table_td"><input type="number" name="sub7[]" value="<?php echo $m_data['sub7']; ?>" min="0" max="100"></td>
+                    </tr>
+                    <?php } ?>
+                </table>
+                <br>
+                <input type="submit" class="btn" name="add" value="Save Marks">
+            </form>
         </center>
-        </div>
-    </body>
+    </div>
+</body>
 </html>

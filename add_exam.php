@@ -35,10 +35,8 @@ error_reporting(0);
             echo '</script>';
         }
         else{
-            $create_table="CREATE TABLE $table_name (id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,enroll INT(10),sub1 INT(10),sub2 INT(10),sub3 INT(10),sub4 INT(10),sub5 INT(10),sub6 INT(10),sub7 INT(10))";
             $sql="INSERT INTO exam(examname,year,type)  VALUES('$table_name','$year','$type')";
             
-            $result2=mysqli_query($conn,$create_table);
             $result3=mysqli_query($conn,$sql);
             
 

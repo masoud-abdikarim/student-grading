@@ -18,7 +18,7 @@ session_start();
 
     $table=$_GET['exam_id'];
 
-    $sql="SELECT * FROM $table";
+    $sql="SELECT * FROM results WHERE exam_id='$table'";
 
     $result=mysqli_query($conn,$sql);
 
