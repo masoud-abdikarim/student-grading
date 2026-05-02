@@ -17,15 +17,16 @@ $conn=mysqli_connect($host,$user,$password,$db);
 $exam_id = $_GET['exam_id'];
 $student_enroll = $_GET['student_id'];
 
-$result_query = "SELECT * FROM results WHERE exam_id='$exam_id' AND enroll='$student_enroll'";
+$exam_query = "SELECT e.*, c.class_name FROM exam e JOIN classes c ON e.class_id = c.id WHERE e.id='$exam_id'";
+$exam_info = mysqli_fetch_assoc(mysqli_query($conn, $exam_query));
+$exam_subject = $exam_info['subject'];
+
+$result_query = "SELECT * FROM results WHERE exam_id='$exam_id' AND enroll='$student_enroll' AND subject='$exam_subject'";
 $result_res = mysqli_query($conn, $result_query);
 $marks_data = mysqli_fetch_assoc($result_res);
 
 $student_query = "SELECT s.*, c.class_name FROM studentlist s LEFT JOIN classes c ON s.class_id = c.id WHERE s.enroll='$student_enroll'";
 $student_data = mysqli_fetch_assoc(mysqli_query($conn, $student_query));
-
-$exam_query = "SELECT * FROM exam WHERE id='$exam_id'";
-$exam_info = mysqli_fetch_assoc(mysqli_query($conn, $exam_query));
 
 function getGrade($marks) {
     if ($marks >= 90) return ["grade" => "A+", "pass" => "Pass", "color" => "#00b894"];
@@ -37,21 +38,8 @@ function getGrade($marks) {
     return ["grade" => "F", "pass" => "Fail", "color" => "#d63031"];
 }
 
-$subjects = [
-    "sub1" => "English",
-    "sub2" => "Science",
-    "sub3" => "Hindi",
-    "sub4" => "Maths",
-    "sub5" => "Social Science",
-    "sub6" => "Sanskrit",
-    "sub7" => "Computer"
-];
-
-$total_marks = 0;
-foreach($subjects as $key => $name) {
-    $total_marks += ($marks_data[$key] ?? 0);
-}
-$percentage = number_format(($total_marks / 7), 2);
+$m = $marks_data['marks'] ?? 0;
+$g = getGrade($m);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,52 +55,39 @@ $percentage = number_format(($total_marks / 7), 2);
     <div class="content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <div>
-                <h1>Detailed Marks Report</h1>
+                <h1>Subject Performance Analysis</h1>
                 <p style="color: #636e72;">Exam: <strong><?php echo $exam_info['examname']; ?></strong> | Student: <strong><?php echo $student_data['firstname'] . " " . $student_data['lastname']; ?></strong></p>
             </div>
-            <a href="admin_view_result.php?exam_id=<?php echo $exam_id; ?>" class="logout" style="background: #eee; color: #333; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600;">Back to List</a>
+            <a href="admin_marks.php?exam_id=<?php echo $exam_id; ?>" class="logout" style="background: #eee; color: #333; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600;">Back to List</a>
         </div>
 
         <div style="background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 40px; border-left: 5px solid #6c5ce7;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <p><strong>Student Name:</strong> <?php echo $student_data['firstname'] . " " . $student_data['lastname']; ?></p>
                 <p><strong>Enrollment No:</strong> <?php echo $student_data['enroll']; ?></p>
-                <p><strong>Class:</strong> <?php echo $student_data['class_name']; ?></p>
-                <p><strong>Overall Status:</strong> <span style="color: <?php echo ($percentage >= 40) ? '#00b894' : '#d63031'; ?>; font-weight: 700;"><?php echo ($percentage >= 40) ? 'PASSED' : 'FAILED'; ?></span></p>
+                <p><strong>Subject:</strong> <span style="color: #6c5ce7; font-weight: 700;"><?php echo $exam_subject; ?></span></p>
+                <p><strong>Result Type:</strong> <?php echo $exam_info['type']; ?></p>
             </div>
         </div>
 
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Marks Obtained</th>
-                        <th>Grade</th>
-                        <th>Remark</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach($subjects as $key => $name) { 
-                        $m = $marks_data[$key] ?? 0;
-                        $g = getGrade($m);
-                    ?>
-                    <tr>
-                        <td style="font-weight: 600;"><?php echo $name; ?></td>
-                        <td><?php echo $m; ?> / 100</td>
-                        <td><span style="font-weight: 700; color: <?php echo $g['color']; ?>;"><?php echo $g['grade']; ?></span></td>
-                        <td><span style="background: <?php echo $g['color']; ?>15; color: <?php echo $g['color']; ?>; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;"><?php echo $g['pass']; ?></span></td>
-                    </tr>
-                    <?php } ?>
-                </tbody>
-                <tfoot>
-                    <tr style="background: #fafafa;">
-                        <td style="font-weight: 700; padding: 20px;">TOTAL PERFORMANCE</td>
-                        <td style="font-weight: 700; padding: 20px;"><?php echo $total_marks; ?> / 700</td>
-                        <td colspan="2" style="font-weight: 700; padding: 20px; text-align: right; color: #6c5ce7; font-size: 1.2rem;">Percentage: <?php echo $percentage; ?>%</td>
-                    </tr>
-                </tfoot>
-            </table>
+        <div style="background: #fff; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+            <h2 style="margin-bottom: 20px;">Academic Standing</h2>
+            <div style="display: flex; justify-content: center; gap: 50px; align-items: center;">
+                <div>
+                    <p style="color: #636e72; font-size: 0.9rem; margin-bottom: 5px;">Score</p>
+                    <h1 style="font-size: 3rem; margin: 0;"><?php echo $m; ?><span style="font-size: 1.2rem; color: #b2bec3;">/100</span></h1>
+                </div>
+                <div style="width: 2px; height: 60px; background: #eee;"></div>
+                <div>
+                    <p style="color: #636e72; font-size: 0.9rem; margin-bottom: 5px;">Grade</p>
+                    <h1 style="font-size: 3rem; margin: 0; color: <?php echo $g['color']; ?>;"><?php echo $g['grade']; ?></h1>
+                </div>
+                <div style="width: 2px; height: 60px; background: #eee;"></div>
+                <div>
+                    <p style="color: #636e72; font-size: 0.9rem; margin-bottom: 5px;">Outcome</p>
+                    <span style="display: inline-block; padding: 8px 20px; border-radius: 30px; background: <?php echo $g['color']; ?>15; color: <?php echo $g['color']; ?>; font-weight: 700; font-size: 1.1rem;"><?php echo strtoupper($g['pass']); ?></span>
+                </div>
+            </div>
         </div>
     </div>
 </body>

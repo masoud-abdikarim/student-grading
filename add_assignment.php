@@ -1,6 +1,7 @@
 <?php
 session_start();
 error_reporting(E_ALL);
+include 'subjects.php';
 
 if(!isset($_SESSION['username'])) {
     header("location:index.php");
@@ -17,14 +18,14 @@ $conn=mysqli_connect($host,$user,$password,$db);
 if(isset($_POST['create'])) {
     $assign_name = mysqli_real_escape_string($conn, $_POST['assign_name']);
     $class_id = $_POST['class_id'];
-    $subject = $_POST['subject'];
+    $subject = mysqli_real_escape_string($conn, $_POST['subject']);
     $date = $_POST['date'];
 
-    $check = "SELECT * FROM assignment WHERE assignment='$assign_name' AND class_id='$class_id'";
+    $check = "SELECT * FROM assignment WHERE assignment='$assign_name' AND class_id='$class_id' AND subject='$subject'";
     $res = mysqli_query($conn, $check);
 
     if(mysqli_num_rows($res) > 0) {
-        $msg = "Assignment already exists for this class!";
+        $msg = "Assignment already exists for this subject in this class!";
     } else {
         // File Upload
         $name = $_FILES['file']['name'];
@@ -64,7 +65,7 @@ $classes = mysqli_query($conn, "SELECT * FROM classes");
     <div class="content">
         <div class="form-container">
             <h1 style="text-align: center; margin-bottom: 10px;">Post New Assignment</h1>
-            <p style="text-align: center; color: #636e72; margin-bottom: 30px;">Upload coursework and set deadlines for students.</p>
+            <p style="text-align: center; color: #636e72; margin-bottom: 30px;">Upload coursework and set deadlines per subject.</p>
 
             <?php if(isset($msg)) { 
                 $color = strpos($msg, 'Successfully') !== false ? '#00b894' : '#d63031';
@@ -74,18 +75,16 @@ $classes = mysqli_query($conn, "SELECT * FROM classes");
 
             <form action="#" method="POST" enctype="multipart/form-data">
                 <label>Assignment Title</label>
-                <input type="text" name="assign_name" placeholder="e.g. Algebra Homework #1" required>
+                <input type="text" name="assign_name" placeholder="e.g. Weekly Homework" required>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
                         <label>Subject</label>
                         <select name="subject" required>
                             <option value="">Select Subject</option>
-                            <option>English</option>
-                            <option>Science</option>
-                            <option>Maths</option>
-                            <option>Computer</option>
-                            <option>Social Science</option>
+                            <?php foreach($fixed_subjects as $sub) { ?>
+                                <option value="<?php echo $sub; ?>"><?php echo $sub; ?></option>
+                            <?php } ?>
                         </select>
                     </div>
                     <div>

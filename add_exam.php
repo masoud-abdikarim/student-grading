@@ -1,6 +1,7 @@
 <?php
 session_start();
 error_reporting(E_ALL);
+include 'subjects.php';
 
 if(!isset($_SESSION['username'])) {
     header("location:index.php");
@@ -16,17 +17,18 @@ $conn=mysqli_connect($host,$user,$password,$db);
 
 if(isset($_POST['create'])) {
     $table_name = mysqli_real_escape_string($conn, $_POST['table_name']);
+    $subject = mysqli_real_escape_string($conn, $_POST['subject']);
     $class_id = $_POST['class_id'];
     $year = $_POST['exam_year'];
     $type = $_POST['exam_type'];
 
-    $check = "SELECT * FROM exam WHERE examname='$table_name' AND class_id='$class_id'";
+    $check = "SELECT * FROM exam WHERE examname='$table_name' AND class_id='$class_id' AND subject='$subject'";
     $result = mysqli_query($conn, $check);
 
     if(mysqli_num_rows($result) > 0) {
-        $msg = "Exam already exists for this class!";
+        $msg = "Exam for this subject already exists for this class!";
     } else {
-        $sql = "INSERT INTO exam(examname, year, type, class_id) VALUES('$table_name', '$year', '$type', '$class_id')";
+        $sql = "INSERT INTO exam(examname, subject, year, type, class_id) VALUES('$table_name', '$subject', '$year', '$type', '$class_id')";
         if(mysqli_query($conn, $sql)) {
             $msg = "Exam Created Successfully!";
         } else {
@@ -51,7 +53,7 @@ $classes = mysqli_query($conn, "SELECT * FROM classes");
     <div class="content">
         <div class="form-container">
             <h1 style="text-align: center; margin-bottom: 10px;">Create New Exam</h1>
-            <p style="text-align: center; color: #636e72; margin-bottom: 30px;">Set up a new assessment for your students.</p>
+            <p style="text-align: center; color: #636e72; margin-bottom: 30px;">Set up a new assessment per subject for your students.</p>
 
             <?php if(isset($msg)) { 
                 $color = strpos($msg, 'Successfully') !== false ? '#00b894' : '#d63031';
@@ -61,7 +63,28 @@ $classes = mysqli_query($conn, "SELECT * FROM classes");
 
             <form action="#" method="POST">
                 <label>Exam Name</label>
-                <input type="text" name="table_name" placeholder="e.g. Midterm Mathematics" required>
+                <input type="text" name="table_name" placeholder="e.g. Midterm Exam" required>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label>Subject</label>
+                        <select name="subject" required>
+                            <option value="">Select Subject</option>
+                            <?php foreach($fixed_subjects as $sub) { ?>
+                                <option value="<?php echo $sub; ?>"><?php echo $sub; ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Assign to Class</label>
+                        <select name="class_id" required>
+                            <option value="">Select Class</option>
+                            <?php while($c = mysqli_fetch_assoc($classes)) { ?>
+                                <option value="<?php echo $c['id']; ?>"><?php echo $c['class_name']; ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
@@ -73,14 +96,6 @@ $classes = mysqli_query($conn, "SELECT * FROM classes");
                         <input type="text" name="exam_type" placeholder="e.g. Written" required>
                     </div>
                 </div>
-
-                <label>Assign to Class</label>
-                <select name="class_id" required>
-                    <option value="">Select Class</option>
-                    <?php while($c = mysqli_fetch_assoc($classes)) { ?>
-                        <option value="<?php echo $c['id']; ?>"><?php echo $c['class_name']; ?></option>
-                    <?php } ?>
-                </select>
 
                 <div style="margin-top: 20px;">
                     <button type="submit" name="create" class="submit-btn" style="cursor: pointer; border: none;">Create Assessment</button>

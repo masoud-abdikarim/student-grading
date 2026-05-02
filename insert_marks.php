@@ -16,41 +16,31 @@ $conn=mysqli_connect($host,$user,$password,$db);
 
 $exam_id = $_GET['exam_id'];
 
-if(isset($_POST['add'])) {
-    $enrolls = $_POST['enroll'];
-    $sub1 = $_POST['sub1'];
-    $sub2 = $_POST['sub2'];
-    $sub3 = $_POST['sub3'];
-    $sub4 = $_POST['sub4'];
-    $sub5 = $_POST['sub5'];
-    $sub6 = $_POST['sub6'];
-    $sub7 = $_POST['sub7'];
-
-    for($i=0; $i<count($enrolls); $i++){
-        $e = $enrolls[$i];
-        $s1 = empty($sub1[$i]) ? 0 : $sub1[$i];
-        $s2 = empty($sub2[$i]) ? 0 : $sub2[$i];
-        $s3 = empty($sub3[$i]) ? 0 : $sub3[$i];
-        $s4 = empty($sub4[$i]) ? 0 : $sub4[$i];
-        $s5 = empty($sub5[$i]) ? 0 : $sub5[$i];
-        $s6 = empty($sub6[$i]) ? 0 : $sub6[$i];
-        $s7 = empty($sub7[$i]) ? 0 : $sub7[$i];
-
-        $check = "SELECT * FROM results WHERE exam_id='$exam_id' AND enroll='$e'";
-        $res = mysqli_query($conn, $check);
-        if(mysqli_num_rows($res) > 0){
-            $sql = "UPDATE results SET sub1='$s1', sub2='$s2', sub3='$s3', sub4='$s4', sub5='$s5', sub6='$s6', sub7='$s7' WHERE exam_id='$exam_id' AND enroll='$e'";
-        } else {
-            $sql = "INSERT INTO results (exam_id, enroll, sub1, sub2, sub3, sub4, sub5, sub6, sub7) VALUES ('$exam_id', '$e', '$s1', '$s2', '$s3', '$s4', '$s5', '$s6', '$s7')";
-        }
-        mysqli_query($conn, $sql);
-    }
-    $msg = "Marks Saved Successfully!";
-}
-
 $exam_query = "SELECT e.*, c.class_name FROM exam e JOIN classes c ON e.class_id = c.id WHERE e.id='$exam_id'";
 $exam_data = mysqli_fetch_assoc(mysqli_query($conn, $exam_query));
 $exam_class_id = $exam_data['class_id'];
+$exam_subject = $exam_data['subject'];
+
+if(isset($_POST['add'])) {
+    $enrolls = $_POST['enroll'];
+    $marks_list = $_POST['marks'];
+
+    for($i=0; $i<count($enrolls); $i++){
+        $e = mysqli_real_escape_string($conn, $enrolls[$i]);
+        $m = empty($marks_list[$i]) ? 0 : mysqli_real_escape_string($conn, $marks_list[$i]);
+
+        $check = "SELECT * FROM results WHERE exam_id='$exam_id' AND enroll='$e' AND subject='$exam_subject'";
+        $res = mysqli_query($conn, $check);
+        
+        if(mysqli_num_rows($res) > 0){
+            $sql = "UPDATE results SET marks='$m' WHERE exam_id='$exam_id' AND enroll='$e' AND subject='$exam_subject'";
+        } else {
+            $sql = "INSERT INTO results (exam_id, enroll, subject, marks) VALUES ('$exam_id', '$e', '$exam_subject', '$m')";
+        }
+        mysqli_query($conn, $sql);
+    }
+    $msg = "Marks for $exam_subject Saved Successfully!";
+}
 
 $students = mysqli_query($conn, "SELECT * FROM studentlist WHERE class_id='$exam_class_id' AND usertype='student' ORDER BY firstname");
 ?>
@@ -69,7 +59,7 @@ $students = mysqli_query($conn, "SELECT * FROM studentlist WHERE class_id='$exam
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <div>
                 <h1>Insert Exam Marks</h1>
-                <p style="color: #636e72;">Exam: <strong><?php echo $exam_data['examname']; ?></strong> | Class: <strong><?php echo $exam_data['class_name']; ?></strong></p>
+                <p style="color: #636e72;">Exam: <strong><?php echo $exam_data['examname']; ?></strong> | Subject: <strong style="color: #6c5ce7;"><?php echo $exam_subject; ?></strong> | Class: <strong><?php echo $exam_data['class_name']; ?></strong></p>
             </div>
             <a href="add_result.php" class="logout" style="background: #eee; color: #333; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600;">Back to Exams</a>
         </div>
@@ -83,42 +73,33 @@ $students = mysqli_query($conn, "SELECT * FROM studentlist WHERE class_id='$exam
                 <table>
                     <thead>
                         <tr>
-                            <th>Student</th>
-                            <th>Enrollment</th>
-                            <th>English</th>
-                            <th>Science</th>
-                            <th>Hindi</th>
-                            <th>Maths</th>
-                            <th>Social</th>
-                            <th>Sanskrit</th>
-                            <th>Comp</th>
+                            <th>Student Name</th>
+                            <th>Enrollment No</th>
+                            <th style="width: 200px; text-align: center;"><?php echo $exam_subject; ?> Marks (Max 100)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php while($s = mysqli_fetch_assoc($students)) { 
                             $e = $s['enroll'];
-                            $m = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM results WHERE exam_id='$exam_id' AND enroll='$e'"));
+                            $m_query = mysqli_query($conn, "SELECT marks FROM results WHERE exam_id='$exam_id' AND enroll='$e' AND subject='$exam_subject'");
+                            $m_data = mysqli_fetch_assoc($m_query);
                         ?>
                         <tr>
                             <td style="font-weight: 600;"><?php echo $s['firstname'] . ' ' . $s['lastname']; ?></td>
-                            <td style="color: #636e72; font-size: 0.9rem;">
+                            <td style="color: #636e72;">
                                 <input type="hidden" name="enroll[]" value="<?php echo $e; ?>">
                                 <?php echo $e; ?>
                             </td>
-                            <td><input type="number" name="sub1[]" value="<?php echo $m['sub1'] ?? ''; ?>" min="0" max="100" style="width: 60px; margin-bottom: 0;"></td>
-                            <td><input type="number" name="sub2[]" value="<?php echo $m['sub2'] ?? ''; ?>" min="0" max="100" style="width: 60px; margin-bottom: 0;"></td>
-                            <td><input type="number" name="sub3[]" value="<?php echo $m['sub3'] ?? ''; ?>" min="0" max="100" style="width: 60px; margin-bottom: 0;"></td>
-                            <td><input type="number" name="sub4[]" value="<?php echo $m['sub4'] ?? ''; ?>" min="0" max="100" style="width: 60px; margin-bottom: 0;"></td>
-                            <td><input type="number" name="sub5[]" value="<?php echo $m['sub5'] ?? ''; ?>" min="0" max="100" style="width: 60px; margin-bottom: 0;"></td>
-                            <td><input type="number" name="sub6[]" value="<?php echo $m['sub6'] ?? ''; ?>" min="0" max="100" style="width: 60px; margin-bottom: 0;"></td>
-                            <td><input type="number" name="sub7[]" value="<?php echo $m['sub7'] ?? ''; ?>" min="0" max="100" style="width: 60px; margin-bottom: 0;"></td>
+                            <td style="text-align: center;">
+                                <input type="number" name="marks[]" value="<?php echo $m_data['marks'] ?? ''; ?>" min="0" max="100" placeholder="0" style="width: 100px; margin-bottom: 0; text-align: center; padding: 10px; font-weight: 700;">
+                            </td>
                         </tr>
                         <?php } ?>
                     </tbody>
                 </table>
             </div>
             <div style="margin-top: 30px; text-align: center;">
-                <button type="submit" name="add" class="submit-btn" style="cursor: pointer; border: none; width: auto; padding: 15px 40px; font-size: 1.1rem;">Save All Marks</button>
+                <button type="submit" name="add" class="submit-btn" style="cursor: pointer; border: none; width: auto; padding: 15px 60px; font-size: 1.1rem;">Save All Marks</button>
             </div>
         </form>
     </div>

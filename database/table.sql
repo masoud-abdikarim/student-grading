@@ -35,6 +35,7 @@ CREATE TABLE `studentlist` (
 CREATE TABLE `exam` (
   `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   `examname` VARCHAR(100) NOT NULL,
+  `subject` VARCHAR(100) NOT NULL,
   `year` VARCHAR(20) NOT NULL,
   `type` VARCHAR(50) NOT NULL,
   `class_id` INT(10) UNSIGNED NULL
@@ -86,12 +87,7 @@ CREATE TABLE `results` (
   `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   `exam_id` INT(10) UNSIGNED NOT NULL,
   `enroll` VARCHAR(50) NOT NULL,
-  `sub1` INT(10) DEFAULT 0,
-  `sub2` INT(10) DEFAULT 0,
-  `sub3` INT(10) DEFAULT 0,
-  `sub4` INT(10) DEFAULT 0,
-  `sub5` INT(10) DEFAULT 0,
-  `sub6` INT(10) DEFAULT 0,
-  `sub7` INT(10) DEFAULT 0,
-  UNIQUE KEY `student_exam` (`exam_id`, `enroll`)
+  `subject` VARCHAR(100) NOT NULL,
+  `marks` INT(10) DEFAULT 0,
+  UNIQUE KEY `student_exam_subject` (`exam_id`, `enroll`, `subject`)
 );
