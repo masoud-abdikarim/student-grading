@@ -8,13 +8,13 @@ if(!isset($_SESSION['username']) || $_SESSION['usertype'] == 'student') {
 $host="localhost"; $user="root"; $password=""; $db="sgs";
 $conn=mysqli_connect($host,$user,$password,$db);
 
-if(isset($_GET['exam_id'])) {
-    $exam_id = $_GET['exam_id'];
-    $sql = "UPDATE exam SET is_locked=1 WHERE id='$exam_id'";
+if(isset($_GET['context_id'])) {
+    $context_id = $_GET['context_id'];
+    $sql = "UPDATE exam_context SET is_locked=1 WHERE id='$context_id'";
     if(mysqli_query($conn, $sql)) {
-        $_SESSION['message'] = "Exam results locked successfully!";
+        $_SESSION['message'] = "Results locked successfully!";
     } else {
-        $_SESSION['message'] = "Failed to lock exam.";
+        $_SESSION['message'] = "Failed to lock results.";
     }
 }
 

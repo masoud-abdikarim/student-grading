@@ -2,9 +2,12 @@
 session_start();
 if(!isset($_SESSION['username'])) {
     header("location:index.php");
-} elseif($_SESSION['usertype']=='student') {
+    exit();
+} elseif(isset($_SESSION['usertype']) && $_SESSION['usertype']=='student') {
     header("location:index.php");
+    exit();
 }
+
 
 $host="localhost";
 $user="root";

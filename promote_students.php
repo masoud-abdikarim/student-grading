@@ -22,7 +22,10 @@ if(isset($_POST['process_promotion'])) {
 
     foreach($student_enrolls as $enroll) {
         // 1. Log to history
-        $avg_sql = "SELECT AVG(marks) as avg FROM results r JOIN exam e ON r.exam_id = e.id WHERE r.enroll='$enroll' AND e.year='$current_year'";
+        $avg_sql = "SELECT AVG(r.marks) as avg 
+                    FROM results r 
+                    JOIN exam_context ec ON r.context_id = ec.id 
+                    WHERE r.enroll='$enroll' AND ec.year='$current_year'";
         $avg_res = mysqli_fetch_assoc(mysqli_query($conn, $avg_sql));
         $avg = $avg_res['avg'] ?? 0;
 
@@ -45,43 +48,39 @@ $target_classes = mysqli_query($conn, "SELECT * FROM classes");
 // Fetch eligible students
 $students = [];
 if($class_id != '') {
-    // Find ALL Final Exams for this class/year
-    $final_sql = "SELECT id, subject, pass_mark FROM exam WHERE class_id='$class_id' AND year='$year' AND type='Final'";
-    $final_res = mysqli_query($conn, $final_sql);
-    $final_exams = [];
-    $exam_ids = [];
-    while($fe = mysqli_fetch_assoc($final_res)) {
-        $final_exams[$fe['id']] = $fe;
-        $exam_ids[] = $fe['id'];
+    // Find ALL Final Exam contexts for this class/year
+    $final_ctx_sql = "SELECT ec.id, ec.pass_mark 
+                      FROM exam_context ec 
+                      JOIN exam e ON ec.exam_id = e.id 
+                      WHERE ec.class_id='$class_id' AND ec.year='$year' AND e.type_name='Final'";
+    $ctx_res = mysqli_query($conn, $final_ctx_sql);
+    $contexts = [];
+    $ctx_ids = [];
+    while($ctx = mysqli_fetch_assoc($ctx_res)) {
+        $contexts[$ctx['id']] = $ctx;
+        $ctx_ids[] = $ctx['id'];
     }
 
-    if(!empty($exam_ids)) {
-        $ids_str = implode(',', $exam_ids);
-        $sql = "SELECT s.* FROM studentlist s WHERE s.class_id = '$class_id'";
+    if(!empty($ctx_ids)) {
+        $ids_str = implode(',', $ctx_ids);
+        $sql = "SELECT s.* FROM studentlist s WHERE s.class_id = '$class_id' AND s.usertype='student'";
         $res = mysqli_query($conn, $sql);
         while($s = mysqli_fetch_assoc($res)) {
             $enroll = $s['enroll'];
-            // Fetch all marks for this student in these final exams
-            $marks_sql = "SELECT * FROM results WHERE enroll='$enroll' AND exam_id IN ($ids_str)";
-            $marks_res = mysqli_query($conn, $marks_sql);
+            $marks_res = mysqli_query($conn, "SELECT * FROM results WHERE enroll='$enroll' AND context_id IN ($ids_str)");
             
             $total_marks = 0;
             $failed_count = 0;
             $subjects_taken = 0;
-            
             while($m = mysqli_fetch_assoc($marks_res)) {
                 $mark = $m['marks'];
-                $pm = $final_exams[$m['exam_id']]['pass_mark'];
-                
+                $pm = $contexts[$m['context_id']]['pass_mark'];
                 $total_marks += $mark;
                 if($mark < $pm) $failed_count++;
                 $subjects_taken++;
             }
-            
-            // Calculate average based on 7 subjects as per requirement
             $average = $total_marks / 7;
             
-            $s['total_marks'] = $total_marks;
             $s['average'] = $average;
             $s['failed_count'] = $failed_count;
             $s['subjects_taken'] = $subjects_taken;
@@ -89,26 +88,23 @@ if($class_id != '') {
         }
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Student Promotion | Admin</title>
+    <title>Student Promotion | SGS</title>
     <?php include 'shared_styles.php'; ?>
 </head>
 <body>
     <?php include 'admin_sidebar.php'; ?>
     <div class="content">
         <h1>Student Promotion Management</h1>
-        <p style="color: #636e72;">Promote students to the next academic level based on Final Exam results.</p>
-
         <div class="form-container" style="max-width: 1000px; margin-bottom: 30px;">
             <form method="GET" action="" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: end;">
                 <div>
                     <label>Academic Year</label>
-                    <select name="year" style="margin-bottom: 0;">
+                    <select name="year">
                         <?php for($y = date('Y'); $y >= 2020; $y--) { ?>
                             <option value="<?php echo $y; ?>" <?php if($year == $y) echo 'selected'; ?>><?php echo $y; ?></option>
                         <?php } ?>
@@ -116,14 +112,14 @@ if($class_id != '') {
                 </div>
                 <div>
                     <label>Current Class</label>
-                    <select name="class_id" required style="margin-bottom: 0;">
+                    <select name="class_id" required>
                         <option value="">Select Class</option>
                         <?php mysqli_data_seek($classes, 0); while($c = mysqli_fetch_assoc($classes)) { ?>
                             <option value="<?php echo $c['id']; ?>" <?php if($class_id == $c['id']) echo 'selected'; ?>><?php echo $c['class_name']; ?></option>
                         <?php } ?>
                     </select>
                 </div>
-                <button type="submit" class="submit-btn" style="padding: 12px; margin-bottom: 0;">Fetch Students</button>
+                <button type="submit" class="submit-btn" style="padding: 12px;">Fetch Candidates</button>
             </form>
         </div>
 
@@ -136,17 +132,15 @@ if($class_id != '') {
             <?php if(empty($students)): ?>
                 <div style="text-align: center; padding: 40px; background: #fff; border-radius: 20px;">
                     <i class="fa-solid fa-circle-info" style="font-size: 3rem; color: #6c5ce7; margin-bottom: 20px;"></i>
-                    <p>No students or <strong>Final Exam</strong> found for this selection.</p>
+                    <p>No promotion candidates found for the selected year/class.</p>
                 </div>
             <?php else: ?>
                 <form method="POST" action="">
                     <input type="hidden" name="current_year" value="<?php echo $year; ?>">
                     <input type="hidden" name="current_class" value="<?php echo $class_id; ?>">
-                    
-                    <div style="background: #fff; padding: 30px; border-radius: 20px; margin-bottom: 30px; border: 1px solid #eee;">
-                        <h3 style="margin-bottom: 20px;">Promotion Selection</h3>
-                        <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px; padding: 15px; background: #f8faff; border-radius: 12px;">
-                            <label style="margin: 0; white-space: nowrap;">Promote to:</label>
+                    <div style="background: #fff; padding: 30px; border-radius: 20px; border: 1px solid #eee;">
+                        <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 25px; padding: 15px; background: #f8faff; border-radius: 12px;">
+                            <label style="margin: 0;">Promote selected to:</label>
                             <select name="target_class" required style="margin: 0; width: auto;">
                                 <option value="">Select Target Class</option>
                                 <?php mysqli_data_seek($target_classes, 0); while($tc = mysqli_fetch_assoc($target_classes)) { ?>
@@ -155,65 +149,41 @@ if($class_id != '') {
                             </select>
                             <button type="submit" name="process_promotion" class="submit-btn" style="width: auto; margin: 0; padding: 10px 25px;">Process Promotion</button>
                         </div>
-
                         <table>
                             <thead>
                                 <tr>
                                     <th style="width: 50px;"><input type="checkbox" onclick="toggleAll(this)"></th>
                                     <th>Enrollment</th>
-                                    <th>Student Name</th>
-                                    <th>Subjects</th>
+                                    <th>Name</th>
                                     <th>Avg Score</th>
                                     <th>Fails</th>
-                                    <th>Eligibility</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach($students as $s): 
-                                    // Rule: Avg >= 50 AND Fails <= 2
                                     $is_eligible = ($s['average'] >= 50 && $s['failed_count'] <= 2);
                                 ?>
                                 <tr style="<?php if(!$is_eligible) echo 'background: #fdf2f2;'; ?>">
-                                    <td>
-                                        <?php if($is_eligible): ?>
-                                            <input type="checkbox" name="promote_list[]" value="<?php echo $s['enroll']; ?>" checked>
-                                        <?php else: ?>
-                                            <i class="fa-solid fa-circle-xmark" style="color: #d63031;" title="Not eligible"></i>
-                                        <?php endif; ?>
-                                    </td>
+                                    <td><?php if($is_eligible): ?><input type="checkbox" name="promote_list[]" value="<?php echo $s['enroll']; ?>" checked><?php endif; ?></td>
                                     <td><?php echo $s['enroll']; ?></td>
                                     <td><?php echo $s['firstname'] . " " . $s['lastname']; ?></td>
-                                    <td><strong><?php echo $s['subjects_taken']; ?></strong> / 7</td>
-                                    <td><strong style="<?php echo ($s['average'] >= 50) ? 'color: #00b894;' : 'color: #d63031;'; ?>"><?php echo number_format($s['average'], 1); ?>%</strong></td>
-                                    <td>
-                                        <span style="<?php echo ($s['failed_count'] > 2) ? 'color: #d63031; font-weight: 700;' : ''; ?>">
-                                            <?php echo $s['failed_count']; ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <?php if($is_eligible): ?>
-                                            <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: #e8f8f5; color: #00b894; font-weight: 700; font-size: 0.8rem;">PASSED</span>
-                                        <?php else: ?>
-                                            <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: #fdeded; color: #d63031; font-weight: 700; font-size: 0.8rem;">FAILED</span>
-                                        <?php endif; ?>
-                                    </td>
+                                    <td><strong><?php echo number_format($s['average'], 1); ?>%</strong></td>
+                                    <td><?php echo $s['failed_count']; ?></td>
+                                    <td><span style="font-weight: 700; color: <?php echo $is_eligible ? '#00b894' : '#d63031'; ?>;"><?php echo $is_eligible ? 'PASS' : 'FAIL'; ?></span></td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
-
                     </div>
                 </form>
             <?php endif; ?>
         <?php endif; ?>
     </div>
-
     <script>
     function toggleAll(source) {
         checkboxes = document.getElementsByName('promote_list[]');
-        for(var i=0, n=checkboxes.length;i<n;i++) {
-            if(!checkboxes[i].disabled) checkboxes[i].checked = source.checked;
-        }
+        for(var i=0, n=checkboxes.length;i<n;i++) checkboxes[i].checked = source.checked;
     }
     </script>
 </body>

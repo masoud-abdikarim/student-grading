@@ -2,9 +2,12 @@
 session_start();
 if(!isset($_SESSION['username'])) {
     header("location:index.php");
-} elseif($_SESSION['usertype']=='admin') {
+    exit();
+} elseif(isset($_SESSION['usertype']) && $_SESSION['usertype']=='admin') {
     header("location:index.php");
+    exit();
 }
+
 
 $host="localhost";
 $user="root";
@@ -18,7 +21,8 @@ $result = mysqli_query($conn, $sql);
 $info = mysqli_fetch_assoc($result);
 
 // Summary Stats for Student
-$exam_count = mysqli_num_rows(mysqli_query($conn, "SELECT DISTINCT examname FROM results WHERE enroll='$username'"));
+$exam_count = mysqli_num_rows(mysqli_query($conn, "SELECT DISTINCT context_id FROM results WHERE enroll='$username'"));
+
 $latest_result = mysqli_query($conn, "SELECT marks FROM results WHERE enroll='$username' ORDER BY id DESC LIMIT 1");
 $latest_val = mysqli_fetch_assoc($latest_result)['marks'] ?? 'N/A';
 ?>

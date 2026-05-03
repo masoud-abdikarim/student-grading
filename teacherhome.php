@@ -2,9 +2,12 @@
 session_start();
 if(!isset($_SESSION['username'])) {
     header("location:index.php");
-} elseif($_SESSION['usertype']=='admin') {
+    exit();
+} elseif(isset($_SESSION['usertype']) && $_SESSION['usertype']=='admin') {
     header("location:index.php");
+    exit();
 }
+
 
 $host="localhost";
 $user="root";
