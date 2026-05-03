@@ -12,6 +12,7 @@
         <li><a href="adminhome.php" class="active">Dashboard</a></li>
         <li><a href="add_student.php">Add Student</a></li>
         <li><a href="view_student.php">Student List</a></li>
+        <li><a href="promote_students.php">Student Promotion</a></li>
         <li><a href="add_teacher.php">Add Teacher</a></li>
         <li><a href="view_teacher.php">Teacher List</a></li>
         <li><a href="add_class.php">Add Class</a></li>

@@ -75,10 +75,16 @@ $classes = mysqli_query($conn, "SELECT * FROM classes");
                         <td><?php echo $info['year']; ?></td>
                         <td><?php echo $info['type']; ?></td>
                         <td style="text-align: center;">
-                            <a href="insert_marks.php?exam_id=<?php echo $info['id']; ?>" class="table-btn" style="background: #e8f8f5; color: #00b894;">Insert Marks</a>
-                            <a href="edit_marks.php?exam_id=<?php echo $info['id']; ?>" class="table-btn table-btn-update">Edit</a>
-                            <a href="delete_exam.php?exam_id=<?php echo $info['id']; ?>" class="table-btn table-btn-delete" onClick="return confirm('Delete this exam and all results?')">Delete</a>
+                            <?php if($info['is_locked'] == 1) { ?>
+                                <span style="background: #fdeded; color: #d63031; padding: 6px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 700;"><i class="fa-solid fa-lock"></i> Locked</span>
+                                <a href="admin_marks.php?exam_id=<?php echo $info['id']; ?>" class="table-btn" style="background: #eee; color: #666;">View Results</a>
+                            <?php } else { ?>
+                                <a href="insert_marks.php?exam_id=<?php echo $info['id']; ?>" class="table-btn" style="background: #e8f8f5; color: #00b894;">Insert Marks</a>
+                                <a href="lock_exam.php?exam_id=<?php echo $info['id']; ?>" class="table-btn" style="background: #f1f2f6; color: #2d3436;" onClick="return confirm('Lock these results? They cannot be edited after locking.')"><i class="fa-solid fa-lock"></i> Lock</a>
+                                <a href="delete_exam.php?exam_id=<?php echo $info['id']; ?>" class="table-btn table-btn-delete" onClick="return confirm('Delete this exam and all results?')">Delete</a>
+                            <?php } ?>
                         </td>
+
                     </tr>
                     <?php } ?>
                 </tbody>

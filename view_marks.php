@@ -28,19 +28,22 @@ $marks_data = mysqli_fetch_assoc($result_res);
 $student_query = "SELECT s.*, c.class_name FROM studentlist s LEFT JOIN classes c ON s.class_id = c.id WHERE s.enroll='$student_enroll'";
 $student_data = mysqli_fetch_assoc(mysqli_query($conn, $student_query));
 
-function getGrade($marks) {
+$pass_mark = $exam_info['pass_mark'] ?? 40;
+
+function getGrade($marks, $pm) {
     if ($marks >= 90) return ["grade" => "A+", "pass" => "Pass", "color" => "#00b894"];
     if ($marks >= 80) return ["grade" => "A", "pass" => "Pass", "color" => "#00b894"];
     if ($marks >= 70) return ["grade" => "B+", "pass" => "Pass", "color" => "#00b894"];
     if ($marks >= 60) return ["grade" => "B", "pass" => "Pass", "color" => "#00b894"];
-    if ($marks >= 50) return ["grade" => "C", "pass" => "Pass", "color" => "#00b894"];
-    if ($marks >= 40) return ["grade" => "P", "pass" => "Pass", "color" => "#fdcb6e"];
+    if ($marks >= $pm) return ["grade" => "C", "pass" => "Pass", "color" => "#00b894"];
+    if ($marks >= ($pm - 10)) return ["grade" => "P", "pass" => "Pass", "color" => "#fdcb6e"];
     return ["grade" => "F", "pass" => "Fail", "color" => "#d63031"];
 }
 
 $m = $marks_data['marks'] ?? 0;
-$g = getGrade($m);
+$g = getGrade($m, $pass_mark);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,8 +59,9 @@ $g = getGrade($m);
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <div>
                 <h1>Subject Performance Report</h1>
-                <p style="color: #636e72;">Exam: <strong><?php echo $exam_info['examname']; ?></strong> | Year: <strong><?php echo $exam_info['year']; ?></strong></p>
+                <p style="color: #636e72;">Exam: <strong><?php echo $exam_info['examname']; ?></strong> (<?php echo $exam_info['category']; ?>) | Year: <strong><?php echo $exam_info['year']; ?></strong></p>
             </div>
+
             <a href="view_result.php" class="logout" style="background: #eee; color: #333; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600;">Back to List</a>
         </div>
 
@@ -76,7 +80,9 @@ $g = getGrade($m);
                 <div>
                     <p style="color: #636e72; font-size: 0.9rem; margin-bottom: 5px;">Marks Obtained</p>
                     <h1 style="font-size: 3rem; margin: 0;"><?php echo $m; ?><span style="font-size: 1.2rem; color: #b2bec3;">/100</span></h1>
+                    <p style="font-size: 0.8rem; color: #636e72;">Pass Mark: <?php echo $pass_mark; ?></p>
                 </div>
+
                 <div style="width: 2px; height: 60px; background: #eee;"></div>
                 <div>
                     <p style="color: #636e72; font-size: 0.9rem; margin-bottom: 5px;">Grade</p>

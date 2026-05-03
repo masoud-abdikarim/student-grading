@@ -21,6 +21,9 @@ if(isset($_POST['create'])) {
     $class_id = $_POST['class_id'];
     $year = $_POST['exam_year'];
     $type = $_POST['exam_type'];
+    $category = $_POST['category'];
+    $pass_mark = $_POST['pass_mark'];
+
 
     $check = "SELECT * FROM exam WHERE examname='$table_name' AND class_id='$class_id' AND subject='$subject'";
     $result = mysqli_query($conn, $check);
@@ -28,7 +31,9 @@ if(isset($_POST['create'])) {
     if(mysqli_num_rows($result) > 0) {
         $msg = "Exam for this subject already exists for this class!";
     } else {
-        $sql = "INSERT INTO exam(examname, subject, year, type, class_id) VALUES('$table_name', '$subject', '$year', '$type', '$class_id')";
+        $sql = "INSERT INTO exam(examname, subject, year, type, category, pass_mark, class_id) 
+                VALUES('$table_name', '$subject', '$year', '$type', '$category', '$pass_mark', '$class_id')";
+
         if(mysqli_query($conn, $sql)) {
             $msg = "Exam Created Successfully!";
         } else {
@@ -89,13 +94,35 @@ $classes = mysqli_query($conn, "SELECT * FROM classes");
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
                         <label>Exam Year</label>
-                        <input type="text" name="exam_year" placeholder="e.g. 2024" required>
+                        <input type="number" name="exam_year" value="<?php echo date('Y'); ?>" placeholder="e.g. 2024" required>
                     </div>
                     <div>
-                        <label>Exam Type</label>
-                        <input type="text" name="exam_type" placeholder="e.g. Written" required>
+                        <label>Specific Type</label>
+                        <select name="exam_type" required>
+                            <option value="">Select Specific Type</option>
+                            <option value="Midterm">Midterm Exam</option>
+                            <option value="Final">Final Exam</option>
+                            <option value="Weekly Test">Weekly Test</option>
+                            <option value="Monthly Test">Monthly Test</option>
+                            <option value="Quiz">Quiz</option>
+                        </select>
                     </div>
                 </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label>Broad Category</label>
+                        <select name="category" required>
+                            <option value="Main">Main Exam (Promotion Affecting)</option>
+                            <option value="Other">Other (Continuous Assessment)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Pass Mark (out of 100)</label>
+                        <input type="number" name="pass_mark" value="50" min="0" max="100" required>
+                    </div>
+                </div>
+
 
                 <div style="margin-top: 20px;">
                     <button type="submit" name="create" class="submit-btn" style="cursor: pointer; border: none;">Create Assessment</button>

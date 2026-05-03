@@ -38,7 +38,11 @@ CREATE TABLE `exam` (
   `subject` VARCHAR(100) NOT NULL,
   `year` VARCHAR(20) NOT NULL,
   `type` VARCHAR(50) NOT NULL,
+  `category` ENUM('Main', 'Other') NOT NULL DEFAULT 'Other',
+  `pass_mark` INT DEFAULT 50,
+  `is_locked` TINYINT DEFAULT 0,
   `class_id` INT(10) UNSIGNED NULL
+
 );
 
 CREATE TABLE `assignment` (
@@ -91,3 +95,13 @@ CREATE TABLE `results` (
   `marks` INT(10) DEFAULT 0,
   UNIQUE KEY `student_exam_subject` (`exam_id`, `enroll`, `subject`)
 );
+
+CREATE TABLE `academic_history` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `enroll` VARCHAR(50) NOT NULL,
+  `year` VARCHAR(20) NOT NULL,
+  `class_id` INT(10) UNSIGNED NOT NULL,
+  `average_marks` DECIMAL(5,2) DEFAULT 0,
+  `status` VARCHAR(50) DEFAULT 'Active'
+);
+

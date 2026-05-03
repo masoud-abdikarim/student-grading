@@ -19,6 +19,10 @@ $sql = "SELECT s.*, c.class_name FROM studentlist s LEFT JOIN classes c ON s.cla
 $result = mysqli_query($conn, $sql);
 $info = mysqli_fetch_assoc($result);
 
+$history_query = "SELECT h.*, c.class_name FROM academic_history h LEFT JOIN classes c ON h.class_id = c.id WHERE h.enroll='$username' ORDER BY h.year DESC";
+$history_res = mysqli_query($conn, $history_query);
+
+
 if(isset($_POST['update_profile'])) {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $phone = mysqli_real_escape_string($conn, $_POST['phone']);
@@ -132,6 +136,48 @@ if(isset($_POST['update_profile'])) {
                 </form>
             </div>
         </div>
+
+        <div style="margin-top: 50px; max-width: 900px;">
+            <h2 style="margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: #6c5ce7;"></i> Academic History
+            </h2>
+            
+            <?php if(mysqli_num_rows($history_res) > 0): ?>
+                <div style="background: #fff; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Class</th>
+                                <th>Average Marks</th>
+                                <th>Final Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while($h = mysqli_fetch_assoc($history_res)) { ?>
+                            <tr>
+                                <td style="font-weight: 700; color: #6c5ce7;"><?php echo $h['year']; ?></td>
+                                <td><?php echo $h['class_name'] ?? 'Unknown'; ?></td>
+                                <td><strong><?php echo number_format($h['average_marks'], 1); ?>%</strong></td>
+                                <td>
+                                    <span style="display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; 
+                                        <?php echo ($h['status'] == 'Promoted') ? 'background: #e8f8f5; color: #00b894;' : 'background: #f1f2f6; color: #636e72;'; ?>">
+                                        <?php echo $h['status']; ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <div style="background: #fff; padding: 40px; border-radius: 20px; text-align: center; color: #636e72; border: 2px dashed #eee;">
+                    <i class="fa-solid fa-graduation-cap" style="font-size: 2.5rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                    <p>No academic history records found yet.</p>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
+
 </body>
 </html>

@@ -20,9 +20,14 @@ $exam_query = "SELECT e.*, c.class_name FROM exam e JOIN classes c ON e.class_id
 $exam_data = mysqli_fetch_assoc(mysqli_query($conn, $exam_query));
 $exam_class_id = $exam_data['class_id'];
 $exam_subject = $exam_data['subject'];
+$is_locked = $exam_data['is_locked'];
 
 if(isset($_POST['add'])) {
-    $enrolls = $_POST['enroll'];
+    if($is_locked) {
+        $msg = "Error: This exam is locked and results cannot be modified.";
+    } else {
+        $enrolls = $_POST['enroll'];
+
     $marks_list = $_POST['marks'];
 
     for($i=0; $i<count($enrolls); $i++){
@@ -39,8 +44,10 @@ if(isset($_POST['add'])) {
         }
         mysqli_query($conn, $sql);
     }
-    $msg = "Marks for $exam_subject Saved Successfully!";
+        $msg = "Marks for $exam_subject Saved Successfully!";
+    }
 }
+
 
 $students = mysqli_query($conn, "SELECT * FROM studentlist WHERE class_id='$exam_class_id' AND usertype='student' ORDER BY firstname");
 ?>
@@ -65,8 +72,18 @@ $students = mysqli_query($conn, "SELECT * FROM studentlist WHERE class_id='$exam
         </div>
 
         <?php if(isset($msg)) { 
-            echo "<div style='padding: 15px; border-radius: 12px; margin-bottom: 25px; background: #e8f8f5; color: #00b894; border: 1px solid #00b894; font-weight: 600; text-align: center;'>$msg</div>";
+            $color = strpos($msg, 'Error') !== false ? '#d63031' : '#00b894';
+            $bg = strpos($msg, 'Error') !== false ? '#fdeded' : '#e8f8f5';
+            echo "<div style='padding: 15px; border-radius: 12px; margin-bottom: 25px; background: $bg; color: $color; border: 1px solid $color; font-weight: 600; text-align: center;'>$msg</div>";
         } ?>
+
+        <?php if($is_locked) { ?>
+            <div style="background: #fff; padding: 20px; border-radius: 15px; border-left: 5px solid #d63031; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+                <i class="fa-solid fa-lock" style="font-size: 1.5rem; color: #d63031;"></i>
+                <p style="margin: 0; font-weight: 600;">This exam has been <strong>Locked</strong> by the admin or teacher. Marks are now read-only.</p>
+            </div>
+        <?php } ?>
+
 
         <form method="POST" action="#">
             <div style="overflow-x: auto;">
@@ -91,16 +108,20 @@ $students = mysqli_query($conn, "SELECT * FROM studentlist WHERE class_id='$exam
                                 <?php echo $e; ?>
                             </td>
                             <td style="text-align: center;">
-                                <input type="number" name="marks[]" value="<?php echo $m_data['marks'] ?? ''; ?>" min="0" max="100" placeholder="0" style="width: 100px; margin-bottom: 0; text-align: center; padding: 10px; font-weight: 700;">
+                                <input type="number" name="marks[]" value="<?php echo $m_data['marks'] ?? ''; ?>" min="0" max="100" placeholder="0" style="width: 100px; margin-bottom: 0; text-align: center; padding: 10px; font-weight: 700;" <?php if($is_locked) echo 'disabled'; ?>>
                             </td>
+
                         </tr>
                         <?php } ?>
                     </tbody>
                 </table>
             </div>
-            <div style="margin-top: 30px; text-align: center;">
-                <button type="submit" name="add" class="submit-btn" style="cursor: pointer; border: none; width: auto; padding: 15px 60px; font-size: 1.1rem;">Save All Marks</button>
-            </div>
+            <?php if(!$is_locked) { ?>
+                <div style="margin-top: 30px; text-align: center;">
+                    <button type="submit" name="add" class="submit-btn" style="cursor: pointer; border: none; width: auto; padding: 15px 60px; font-size: 1.1rem;">Save All Marks</button>
+                </div>
+            <?php } ?>
+
         </form>
     </div>
 </body>

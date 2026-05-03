@@ -76,9 +76,11 @@ $classes = mysqli_query($conn, "SELECT * FROM classes");
                         <td><?php echo $info['phone']; ?></td>
                         <td style="font-family: monospace;"><?php echo $info['password']; ?></td>
                         <td>
+                            <a href="final_report.php?enroll=<?php echo $info['enroll']; ?>" class="table-btn" style="background: #e8f8f5; color: #00b894;"><i class="fa-solid fa-file-invoice"></i> Report</a>
                             <a href="update_student.php?student_id=<?php echo $info['id']; ?>" class="table-btn table-btn-update">Edit</a>
                             <a href="delete_student.php?student_id=<?php echo $info['id']; ?>" class="table-btn table-btn-delete" onClick="return confirm('Delete this student?')">Delete</a>
                         </td>
+
                     </tr>
                     <?php } ?>
                 </tbody>
