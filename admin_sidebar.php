@@ -1,5 +1,8 @@
 <header class="header">
+    <button class="back-nav" onclick="goBack()" title="Go Back"><i class="fa-solid fa-arrow-left"></i></button>
     <a href="adminhome.php">Admin Dashboard</a>
+
+
     <div class="logout">
         <a href="logout.php" class="btn">Logout</a>
     </div>

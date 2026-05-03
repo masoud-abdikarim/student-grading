@@ -48,6 +48,9 @@ error_reporting(0);
 <head>
 	<title>Update Teacher Page</title>
 	<link rel="stylesheet" type="text/css" href="css/admin-style.css">
+	<!-- Font Awesome for Icons -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 	<style type="text/css">
 		label
 		{
@@ -78,6 +81,36 @@ error_reporting(0);
 			padding-bottom: 50px;
 			border-radius: 40px;
 		}
+
+		/* Password Toggle Styles */
+		.password-container {
+			position: relative;
+			width: 100%;
+			max-width: 250px; /* Matching the default input width in this design */
+			margin: 0 auto;
+		}
+
+		.password-container input {
+			padding-right: 40px;
+			width: 100%;
+		}
+
+		.toggle-password {
+			position: absolute;
+			right: 10px;
+			top: 50%;
+			transform: translateY(-50%);
+			cursor: pointer;
+			color: #636e72;
+			font-size: 1rem;
+			transition: all 0.3s;
+			z-index: 10;
+		}
+
+		.toggle-password:hover {
+			color: #de3163;
+		}
+
 	</style>
 </head>
     <body>
@@ -113,10 +146,14 @@ error_reporting(0);
         				<input type="text" name="phone" value="<?php echo "{$info['phone']}";?>">
         			</div>
 
-        			<div>
+					<div>
         				<label>Password</label>
-        				<input type="text" name="password" value="<?php echo "{$info['password']}";?>">
+						<div class="password-container">
+        					<input type="password" name="password" id="password" value="<?php echo "{$info['password']}";?>">
+							<i class="fa-solid fa-eye toggle-password" id="toggleIcon" onclick="togglePassword('password', 'toggleIcon')"></i>
+						</div>
         			</div>
+
         			<br><br>
         			<div>
         				<input type="submit" class="btn" name="save_update" value="Update">
@@ -125,5 +162,22 @@ error_reporting(0);
         	</div>
         </center>
         </div>
-    </body>
+
+	<script>
+	function togglePassword(inputId, iconId) {
+		const passwordInput = document.getElementById(inputId);
+		const toggleIcon = document.getElementById(iconId);
+		
+		if (passwordInput.type === "password") {
+			passwordInput.type = "text";
+			toggleIcon.classList.remove("fa-eye");
+			toggleIcon.classList.add("fa-eye-slash");
+		} else {
+			passwordInput.type = "password";
+			toggleIcon.classList.remove("fa-eye-slash");
+			toggleIcon.classList.add("fa-eye");
+		}
+	}
+	</script>
+</body>
 </html>

@@ -1,5 +1,8 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    /* Font Awesome for Icons */
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
 
     * {
         margin: 0;
@@ -214,6 +217,64 @@
 
     input:focus { border-color: #6c5ce7; }
 
+    /* Password Toggle Styles */
+    .password-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .password-container input {
+        padding-right: 45px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 42%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #636e72;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        z-index: 10;
+        padding: 5px;
+    }
+
+    .toggle-password:hover {
+        color: #6c5ce7;
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    /* Back Navigation Styles */
+    .back-nav {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 35px;
+        height: 35px;
+        background: #f1f2f6;
+        border-radius: 50%;
+        color: #2d3436;
+        text-decoration: none;
+        margin-right: 15px;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+        outline: none;
+    }
+
+    .back-nav:hover {
+        background: #6c5ce7;
+        color: #fff;
+        transform: translateX(-3px);
+    }
+
+    .back-nav i {
+        font-size: 0.9rem;
+    }
+
+
+
     .submit-btn {
         background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
         color: #fff;
@@ -237,3 +298,30 @@
         .header, .content { left: 0; margin-left: 0; width: 100%; }
     }
 </style>
+
+<script>
+function togglePassword(inputId, iconId) {
+    const passwordInput = document.getElementById(inputId);
+    const toggleIcon = document.getElementById(iconId);
+    
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleIcon.classList.remove("fa-eye");
+        toggleIcon.classList.add("fa-eye-slash");
+    } else {
+        passwordInput.type = "password";
+        toggleIcon.classList.remove("fa-eye-slash");
+        toggleIcon.classList.add("fa-eye");
+    }
+}
+
+function goBack() {
+    if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+        window.history.back();
+    } else {
+        window.location.href = 'index.php';
+    }
+}
+</script>
+
+

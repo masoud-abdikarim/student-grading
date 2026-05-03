@@ -108,7 +108,11 @@ if(isset($_POST['add_student'])) {
                 </div>
 
                 <label>Login Password</label>
-                <input type="password" name="password" value="<?php echo $password2 ?>" placeholder="Set a secure password" required>
+                <div class="password-container">
+                    <input type="password" name="password" id="password" value="<?php echo $password2 ?>" placeholder="Set a secure password" required>
+                    <i class="fa-solid fa-eye toggle-password" id="toggleIcon" onclick="togglePassword('password', 'toggleIcon')"></i>
+                </div>
+
 
                 <div style="margin-top: 20px;">
                     <button type="submit" name="add_student" class="submit-btn" style="cursor: pointer; border: none;">Add Student Account</button>

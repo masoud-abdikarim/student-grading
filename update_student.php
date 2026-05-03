@@ -82,7 +82,11 @@ $classes = mysqli_query($conn, "SELECT * FROM classes");
                 </div>
 
                 <label>Login Password</label>
-                <input type="text" name="password" value="<?php echo $info['password']; ?>" required>
+                <div class="password-container">
+                    <input type="password" name="password" id="password" value="<?php echo $info['password']; ?>" required>
+                    <i class="fa-solid fa-eye toggle-password" id="toggleIcon" onclick="togglePassword('password', 'toggleIcon')"></i>
+                </div>
+
 
                 <div style="margin-top: 20px; display: flex; gap: 10px;">
                     <button type="submit" name="save_update" class="submit-btn" style="cursor: pointer; border: none; flex: 1;">Save Changes</button>

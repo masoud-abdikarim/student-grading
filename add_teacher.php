@@ -88,7 +88,11 @@ if(isset($_POST['add_teacher'])) {
                 <input type="text" name="phone" value="<?php echo $phone2 ?>" placeholder="10-digit number" required>
 
                 <label>Login Password</label>
-                <input type="password" name="password" value="<?php echo $password2 ?>" placeholder="Create a secure password" required>
+                <div class="password-container">
+                    <input type="password" name="password" id="password" value="<?php echo $password2 ?>" placeholder="Create a secure password" required>
+                    <i class="fa-solid fa-eye toggle-password" id="toggleIcon" onclick="togglePassword('password', 'toggleIcon')"></i>
+                </div>
+
 
                 <div style="margin-top: 20px;">
                     <button type="submit" name="add_teacher" class="submit-btn" style="cursor: pointer; border: none;">Add Teacher Account</button>

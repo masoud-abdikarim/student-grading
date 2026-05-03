@@ -6,6 +6,9 @@
     <title>Student Login | SGS Academy</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        /* Font Awesome for Icons */
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
 
         * {
             margin: 0;
@@ -40,9 +43,11 @@
         }
 
         .back-btn:hover {
+            background: #fff;
+            color: #667eea;
             transform: translateX(-5px);
-            opacity: 0.8;
         }
+
 
         /* Login Card Style */
         .login-card {
@@ -111,6 +116,32 @@
             border-color: #667eea;
         }
 
+        /* Password Toggle Styles */
+        .password-container {
+            position: relative;
+        }
+
+        .password-container input {
+            padding-right: 45px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #636e72;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .toggle-password:hover {
+            color: #667eea;
+        }
+
+
         /* Login Button */
         .submit-btn {
             width: 100%;
@@ -159,9 +190,10 @@
     </style>
 </head>
 <body>
-    <a href="index.php" class="back-btn">
-        <span>&#8592; Back to Home</span>
+    <a href="javascript:void(0)" onclick="goBack()" class="back-btn" title="Go Back">
+        <span>&#8592; Back</span>
     </a>
+
 
     <div class="login-card">
         <h1>Student Login</h1>
@@ -184,8 +216,12 @@
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" placeholder="Enter your password" required>
+                <div class="password-container">
+                    <input type="password" name="password" id="password" placeholder="Enter your password" required>
+                    <i class="fa-solid fa-eye toggle-password" id="toggleIcon" onclick="togglePassword('password', 'toggleIcon')"></i>
+                </div>
             </div>
+
             
             <button type="submit" class="submit-btn">Login to Account</button>
             
@@ -194,5 +230,32 @@
 
         <div class="footer-text">Student Grading System</div>
     </div>
+
+    <script>
+    function togglePassword(inputId, iconId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleIcon = document.getElementById(iconId);
+        
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            toggleIcon.classList.remove("fa-eye");
+            toggleIcon.classList.add("fa-eye-slash");
+        } else {
+            passwordInput.type = "password";
+            toggleIcon.classList.remove("fa-eye-slash");
+            toggleIcon.classList.add("fa-eye");
+        }
+    }
+
+    function goBack() {
+        if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+            window.history.back();
+        } else {
+            window.location.href = 'index.php';
+        }
+    }
+    </script>
+
 </body>
+
 </html>

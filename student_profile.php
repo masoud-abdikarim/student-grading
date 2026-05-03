@@ -118,8 +118,12 @@ if(isset($_POST['update_profile'])) {
                         </div>
                         <div>
                             <label>Update Password</label>
-                            <input type="text" name="password" value="<?php echo $info['password']; ?>" required>
+                            <div class="password-container">
+                                <input type="password" name="password" id="password" value="<?php echo $info['password']; ?>" required>
+                                <i class="fa-solid fa-eye toggle-password" id="toggleIcon" onclick="togglePassword('password', 'toggleIcon')"></i>
+                            </div>
                         </div>
+
                     </div>
 
                     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">

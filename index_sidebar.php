@@ -1,5 +1,7 @@
 <header class="header">
-                <a href="index.php">Student Grading System</a>
+    <button class="back-nav" onclick="goBack()" title="Go Back"><i class="fa-solid fa-arrow-left"></i></button>
+    <a href="index.php">Student Grading System</a>
+
 </header>
         <aside>
         	<ul>
